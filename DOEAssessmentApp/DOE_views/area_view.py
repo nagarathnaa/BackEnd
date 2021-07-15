@@ -87,6 +87,7 @@ def getaddarea():
                         json_data = mergedict({'id': d.id},
                                               {'name': d.name},
                                               {'description': d.description},
+                                              {'priority': d.priority},
                                               {'projectid': d.projectid},
                                               {'assessmentcompletion': str(d.assessmentcompletion)},
                                               {'achievedpercentage': str(d.achievedpercentage)},
@@ -103,6 +104,7 @@ def getaddarea():
                     res = request.get_json(force=True)
                     areaname = res['name']
                     areadesc = res['description']
+                    priority = res['priority']
                     proj_id = res['projectid']
                     existing_area = Area.query.filter(Area.name == areaname, Area.projectid == proj_id).one_or_none()
 
@@ -134,7 +136,7 @@ def getaddarea():
                         # end region
 
                     if existing_area is None:
-                        areains = Area(areaname, areadesc, proj_id, session['empid'])
+                        areains = Area(areaname, areadesc, proj_id, session['empid'], priority)
                         db.session.add(areains)
                         db.session.commit()
 
@@ -143,6 +145,7 @@ def getaddarea():
                             json_data = mergedict({'id': d.id},
                                                   {'name': d.name},
                                                   {'description': d.description},
+                                                  {'priority': d.priority},
                                                   {'projectid': d.projectid},
                                                   {'assessmentcompletion': str(d.assessmentcompletion)},
                                                   {'achievedpercentage': str(d.achievedpercentage)},
@@ -164,7 +167,7 @@ def getaddarea():
                     else:
                         data_proj = Project.query.filter_by(id=proj_id).first()
                         return make_response(jsonify({"msg": f"Area {areaname} already "
-                                                                 f"exists for project {data_proj.name}."})), 400
+                                                             f"exists for project {data_proj.name}."})), 400
             else:
                 return make_response(jsonify({"msg": resp})), 401
         else:
@@ -254,11 +257,11 @@ def updelarea():
                 res = request.get_json(force=True)
                 areaid = res['areaid']
                 data = Area.query.filter_by(id=areaid)
-
                 for d in data:
                     json_data = mergedict({'id': d.id},
                                           {'name': d.name},
                                           {'description': d.description},
+                                          {'priority': d.priority},
                                           {'projectid': d.projectid},
                                           {'assessmentcompletion': str(d.assessmentcompletion)},
                                           {'achievedpercentage': str(d.achievedpercentage)},
@@ -280,6 +283,7 @@ def updelarea():
                             json_data = mergedict({'id': d.id},
                                                   {'name': d.name},
                                                   {'description': d.description},
+                                                  {'priority': d.priority},
                                                   {'projectid': d.projectid},
                                                   {'assessmentcompletion': str(d.assessmentcompletion)},
                                                   {'achievedpercentage': str(d.achievedpercentage)},
@@ -294,7 +298,9 @@ def updelarea():
                         return jsonify({"data": results[0]})
                     if request.method == 'PUT':
                         areadesc = res['AreaDescription']
+                        priority = res['priority']
                         data.first().description = areadesc
+                        data.first().priority = priority
                         data.first().modifiedby = session['empid']
                         db.session.add(data.first())
                         db.session.commit()
@@ -303,6 +309,7 @@ def updelarea():
                             json_data = mergedict({'id': d.id},
                                                   {'name': d.name},
                                                   {'description': d.description},
+                                                  {'priority': d.priority},
                                                   {'projectid': d.projectid},
                                                   {'assessmentcompletion': str(d.assessmentcompletion)},
                                                   {'achievedpercentage': str(d.achievedpercentage)},
@@ -367,6 +374,7 @@ def updelarea():
                                 json_data = mergedict({'id': f.id},
                                                       {'name': f.name},
                                                       {'description': f.description},
+                                                      {'priority': f.priority},
                                                       {'retake_assessment_days': f.retake_assessment_days},
                                                       {'area_id': f.area_id},
                                                       {'proj_id': f.proj_id},
@@ -474,6 +482,7 @@ def getareabyprojectid():
                             json_data = mergedict({'id': d.id},
                                                   {'name': d.name},
                                                   {'description': d.description},
+                                                  {'priority': d.priority},
                                                   {'projectid': d.projectid},
                                                   {'assessmentcompletion': str(d.assessmentcompletion)},
                                                   {'achievedpercentage': str(d.achievedpercentage)},

@@ -6,6 +6,7 @@ class Functionality(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(), nullable=False)
+    priority = db.Column(db.Integer)
     retake_assessment_days = db.Column(db.Integer)
     area_id = db.Column(db.Integer, nullable=False)
     proj_id = db.Column(db.Integer, nullable=False)
@@ -19,13 +20,14 @@ class Functionality(db.Model):
     createdby = db.Column(db.String(20))
     modifiedby = db.Column(db.String(20))
 
-    def __init__(self, name, description, retake_assessment_days, area_id, proj_id, createdby):
+    def __init__(self, name, description, retake_assessment_days, area_id, proj_id, createdby, priority):
         self.name = name
         self.description = description
         self.retake_assessment_days = retake_assessment_days
         self.area_id = area_id
         self.proj_id = proj_id
         self.createdby = createdby
+        self.priority = priority
 
     def __repr__(self):
         return '<Functionality %r>' % self.name

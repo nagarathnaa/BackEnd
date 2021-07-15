@@ -79,6 +79,7 @@ def getAndPost():
                         json_data = mergedict({'id': d.id},
                                               {'name': d.name},
                                               {'description': d.description},
+                                              {'priority': d.priority},
                                               {'retake_assessment_days': d.retake_assessment_days},
                                               {'area_id': d.area_id},
                                               {'proj_id': d.proj_id},
@@ -97,10 +98,10 @@ def getAndPost():
                     res = request.get_json(force=True)
                     func_name = res['name']
                     func_desc = res['description']
+                    priority = res['priority']
                     func_retake_assess = res['retake_assessment_days']
                     func_area_id = res['area_id']
                     func_pro_id = res['proj_id']
-
                     projectmanager = Projectassignmenttomanager.query.filter_by(project_id=func_pro_id)
                     if projectmanager.first() is not None:
                         userdata = Companyuserdetails.query.filter_by(empid=projectmanager.first().emp_id).first()
@@ -117,7 +118,6 @@ def getAndPost():
                             mailfrom = emailconf.email
                             host = emailconf.host
                             pwd = emailconf.password
-
                         # region mail notification
                         notification_data = Notification.query.filter_by(
                             event_name="ADDFUNCTIONALITYTOMANAGER").first()
@@ -132,7 +132,7 @@ def getAndPost():
                                                                         func_area_id).one_or_none()
                     if existing_functionality is None:
                         funcins = Functionality(func_name, func_desc, func_retake_assess, func_area_id, func_pro_id,
-                                                session['empid'])
+                                                session['empid'], priority)
                         db.session.add(funcins)
                         db.session.commit()
 
@@ -141,6 +141,7 @@ def getAndPost():
                             json_data = mergedict({'id': d.id},
                                                   {'name': d.name},
                                                   {'description': d.description},
+                                                  {'priority': d.priority},
                                                   {'retake_assessment_days': d.retake_assessment_days},
                                                   {'area_id': d.area_id},
                                                   {'proj_id': d.proj_id},
@@ -260,6 +261,7 @@ def updateAndDelete():
                     json_data = mergedict({'id': d.id},
                                           {'name': d.name},
                                           {'description': d.description},
+                                          {'priority': d.priority},
                                           {'retake_assessment_days': d.retake_assessment_days},
                                           {'area_id': d.area_id},
                                           {'proj_id': d.proj_id},
@@ -283,6 +285,7 @@ def updateAndDelete():
                             json_data = mergedict({'id': d.id},
                                                   {'name': d.name},
                                                   {'description': d.description},
+                                                  {'priority': d.priority},
                                                   {'retake_assessment_days': d.retake_assessment_days},
                                                   {'area_id': d.area_id},
                                                   {'proj_id': d.proj_id},
@@ -299,8 +302,10 @@ def updateAndDelete():
                         return make_response(jsonify({"data": results[0]})), 200
                     elif request.method == 'PUT':
                         func_desc = res['description']
+                        priority = res['priority']
                         func_retake_assessment_days = res['retake_assessment_days']
                         data.first().description = func_desc
+                        data.first().priority = priority
                         data.first().retake_assessment_days = func_retake_assessment_days
                         data.first().modifiedby = session['empid']
                         db.session.add(data.first())
@@ -310,6 +315,7 @@ def updateAndDelete():
                             json_data = mergedict({'id': d.id},
                                                   {'name': d.name},
                                                   {'description': d.description},
+                                                  {'priority': d.priority},
                                                   {'retake_assessment_days': d.retake_assessment_days},
                                                   {'area_id': d.area_id},
                                                   {'proj_id': d.proj_id},
@@ -502,6 +508,7 @@ def getfunctionalitybyareaid():
                                     json_data = mergedict({'id': d.id},
                                                           {'name': d.name},
                                                           {'description': d.description},
+                                                          {'priority': d.priority},
                                                           {'retake_assessment_days': d.retake_assessment_days},
                                                           {'area_id': d.area_id},
                                                           {'proj_id': d.proj_id},
@@ -520,6 +527,7 @@ def getfunctionalitybyareaid():
                                 json_data = mergedict({'id': d.id},
                                                       {'name': d.name},
                                                       {'description': d.description},
+                                                      {'priority': d.priority},
                                                       {'retake_assessment_days': d.retake_assessment_days},
                                                       {'area_id': d.area_id},
                                                       {'proj_id': d.proj_id},
