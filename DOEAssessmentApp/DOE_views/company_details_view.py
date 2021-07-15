@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash
 
 companydetails = Blueprint('companydetails', __name__)
 
-colscompanydetails = ['id', 'companyname', 'registeredaddress', 'billingaddress', 'gstortaxnumber', 'registrationkey',
+colscompanydetails = ['id', 'companyname', 'registeredaddress', 'billingaddress', 'registrationkey',
                       'registrationkeyvalidated', 'creationdatetime', 'updationdatetime']
 
 
@@ -57,13 +57,12 @@ def companydetail():
         if request.method == "GET":
             data = Companydetails.query.all()
             result = [{col: getattr(d, col) for col in colscompanydetails} for d in data]
-            return make_response(jsonify({"data": result})), 200
+            return make_response(jsonify({"data": result[0]})), 200
         elif request.method == "POST":
             res = request.get_json(force=True)
             cname = res['CompanyName']
             regadrs = res['RegisteredAddress']
             billadrs = res['BillingAddress']
-            gstno = res['GstorTaxNumber']
             regkey = str(uuid.uuid4())
             eid = res['EmployeeId']
             ename = res['EmployeeName']
@@ -71,7 +70,7 @@ def companydetail():
             email = res['EmployeeEmail']
             existing_company = Companydetails.query.filter(Companydetails.companyname == cname).one_or_none()
             if existing_company is None:
-                compdet = Companydetails(cname, regadrs, billadrs, gstno, regkey)
+                compdet = Companydetails(cname, regadrs, billadrs, regkey)
                 db.session.add(compdet)
                 db.session.commit()
                 compuserdet = Companyuserdetails(eid, ename, erole, email,
@@ -103,14 +102,12 @@ def updatecompanydetails():
             cname = res['CompanyName']
             regadrs = res['RegisteredAddress']
             billadrs = res['BillingAddress']
-            gstno = res['GstorTaxNumber']
             existing_company = Companydetails.query.filter(
                 Companydetails.companyname == cname).one_or_none()
             if existing_company is None:
                 data.first().companyname = cname
                 data.first().registeredaddress = regadrs
                 data.first().billingaddress = billadrs
-                data.first().gstortaxnumber = gstno
                 db.session.add(data.first())
                 db.session.commit()
                 return make_response(jsonify({"message": f"Company details with Company Name {cname} "
