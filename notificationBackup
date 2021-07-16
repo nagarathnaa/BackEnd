@@ -1,0 +1,70 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 12.7 (Debian 12.7-1.pgdg100+1)
+-- Dumped by pg_dump version 13.2
+
+-- Started on 2021-07-13 15:10:51 IST
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 3028 (class 0 OID 20234)
+-- Dependencies: 242
+-- Data for Name: notification; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.notification VALUES (5, 'ADDAREATOMANAGER', 'Area Added', 'Hi {empname}, {areaname} has been added.', '{areaname} has been added.', 1, '2021-05-11 15:04:21.301451', '2021-05-11 15:04:21.301451', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (7, 'ADDFUNCTIONALITYTOMANAGER', 'Functionality Added', 'Hi {empname}, {fname}  has been added.', '{fname} has been added.', 1, '2021-05-11 15:07:01.282377', '2021-05-11 15:07:01.282377', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (8, 'UPDATEFUNCTIONALITYTOMANAGER', 'Functionality Updated', 'Hi {empname}, {fname} has been updated.', '{fname} has been updated.', 1, '2021-05-11 15:08:10.313655', '2021-05-11 15:08:10.313655', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (13, 'ADDQUESTIONTOMANAGER', 'Question Added', 'Hi {empname}, {questionname} has been added.', '{questionname} has been added.', 1, '2021-05-11 15:15:42.251504', '2021-05-11 15:15:42.251504', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (14, 'UPDATEQUESTIONTOMANAGER', 'Question Updated', 'Hi {empname}, {questionname} has been updated.', '{questionname} has been updated.', 1, '2021-05-11 15:16:27.151882', '2021-05-11 15:16:27.151882', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (16, 'ADDUSER', 'Welcome to {companyname}', 'Hi {empname}, Welcome to {companyname}.', 'Welcome to {companyname}.', 1, '2021-05-11 15:25:36.737467', '2021-05-11 15:25:36.737467', 'DOE1', NULL, 'manager,admin,teamMember');
+INSERT INTO public.notification VALUES (19, 'PROJECTASSIGNMENT', 'Project Assigned', 'Hi {empname}, You have been assigned to {projectname}.', 'You have been assigned to {projectname}.', 1, '2021-05-11 19:34:42.847419', '2021-05-11 19:34:42.847419', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (20, 'PROJECTASSOCIATION', 'Project Associated/Disassociated', 'Hi {empname}, You have been {status} to {projectname}.', ' You have been {status} to {projectname}.', 1, '2021-05-11 19:35:44.04748', '2021-05-11 19:35:44.04748', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (9, 'DELETEFUNCTIONALITYTOMANAGER', 'Functionality Deleted', 'Hi {empname}, {fname} has been deleted.', 'Functionality has been deleted.', 1, '2021-05-11 15:08:56.173154', '2021-05-11 15:08:56.173154', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (21, 'ASSESSMENTASSIGNMENT', 'Assessment Assigned', 'Hi {empname}, You have been assigned to set of question(s) under {name}.', 'You have been assigned to set of question(s) under {name}.', 1, '2021-05-19 13:54:34.722275', '2021-05-19 13:54:34.722275', 'DOE1', NULL, 'teamMember');
+INSERT INTO public.notification VALUES (22, 'ASSESSMENTASSOCIATIONTOTM', 'Assessment Associated/Disassociated', 'Hi {empname}, You have been {employeeassignedstatus} to {name}.', 'You have been {employeeassignedstatus} to {name}.', 1, '2021-05-19 13:56:42.723461', '2021-05-19 13:56:42.723461', 'DOE1', NULL, 'teamMember');
+INSERT INTO public.notification VALUES (24, 'SUBMITASSESSMENTWOREVIEW', 'Submitted: Congratulations! Assessment submitted successfully.', 'Hi {empname}, Thank You for taking the assessment! You can retake it on {date}.', 'Thank You for taking the assessment! You can retake it on {date}.', 1, '2021-05-19 14:01:56.33603', '2021-05-19 14:01:56.33603', 'DOE1', NULL, 'teamMember');
+INSERT INTO public.notification VALUES (25, 'SUBMITASSESSMENTWREVIEWTOTM', 'In Review: Congratulations! Assessment submitted successfully but pending for review.', 'Hi {empname}, Thank You for taking the assessment! It is pending with your reporting manager for review.', 'Thank You for taking the assessment! It is pending with your reporting manager for review.', 1, '2021-05-19 14:02:58.201421', '2021-05-19 14:02:58.201421', 'DOE1', NULL, 'teamMember');
+INSERT INTO public.notification VALUES (26, 'SUBMITASSESSMENTWREVIEWTOMANAGER', 'Assessment review of {empname}', 'Hi {managername}, {empname} has taken the assessment and it is pending for your review.', '{empname} has taken the assessment and it is pending for your review.', 1, '2021-05-19 14:04:04.425823', '2021-05-19 14:04:04.425823', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (27, 'SAVEASDRAFTTOTM', 'Submitted: Saved as draft.', 'Hi {empname}, The assessment has been saved as draft. Please complete it.', 'The assessment has been saved as draft. Please complete it.', 1, '2021-05-19 14:05:27.730785', '2021-05-19 14:05:27.730785', 'DOE1', NULL, 'teamMember');
+INSERT INTO public.notification VALUES (28, 'ASSESSMENTREJECTED', 'Reviewed: Regrets! Assessment has not been accepted.', 'Hi {empname}, The assessment submited by you has not been accepted by your reporting manager. Please retake the assessment and submit it once again.', 'The assessment submited by you has not been accepted by your reporting manager. Please retake the assessment and submit it once again.', 1, '2021-05-19 14:07:50.241885', '2021-05-19 14:07:50.241885', 'DOE1', NULL, 'teamMember');
+INSERT INTO public.notification VALUES (29, 'ASSESSMENTACCEPTED', 'Reviewed: Congratulations! Assessment has been accepted.', 'Hi {empname}, The assessment submited by you has been accepted by your reporting manager.  You can retake it on {date}.', 'The assessment submited by you has been accepted by your reporting manager.  You can retake it on {date}.', 1, '2021-05-19 14:08:45.175274', '2021-05-19 14:08:45.175274', 'DOE1', NULL, 'teamMember');
+INSERT INTO public.notification VALUES (11, 'UPDATESUBFUNCTIONALITYTOMANAGER', 'Sub Functionality Updated', 'Hi {empname}, {subfuncname} has been updated.', '{subfuncname} has been updated.', 1, '2021-05-11 15:13:27.102813', '2021-05-11 15:13:27.102813', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (10, 'ADDSUBFUNCTIONALITYTOMANAGER', 'Sub Functionality Added', 'Hi {empname}, {subfuncname} has been added.', '{subfuncname} has been added.', 1, '2021-05-11 15:10:02.247481', '2021-05-11 15:10:02.247481', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (17, 'UPDATEUSER', 'User Details Updated', 'Hi {empname}, Your Role has got changed to {rolename}.', 'Your Role has got changed to {rolename}.', 1, '2021-05-11 15:32:30.028584', '2021-05-11 15:32:30.028584', 'DOE1', NULL, 'admin,manager,teamMember');
+INSERT INTO public.notification VALUES (12, 'DELETESUBFUNCTIONALITYTOMANAGER', 'Sub Functionality Deleted', 'Hi {empname}, {subfuncname}  has been deleted.', 'Sub Functionality has been deleted.', 1, '2021-05-11 15:14:57.608167', '2021-05-11 15:14:57.608167', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (23, 'ASSESSMENTASSOCIATIONTOMANAGER', 'Assessment Associated/Disassociated', 'Hi {managername}, {empname} have been {employeeassignedstatus}to {name}.', '{empname} have been {status} to {name}.', 1, '2021-05-19 14:00:19.560402', '2021-05-19 14:00:19.560402', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (30, 'FORGOTPASSWORD', 'Forgot Password', 'Hi {empname}, Please click <a href="{url}">here</a> to set new password.', '', 1, '2021-05-21 13:15:15.245163', '2021-05-21 13:15:15.245163', 'DOE1', NULL, 'admin,teamMember,manager');
+INSERT INTO public.notification VALUES (4, 'DELETEPROJECTTOMANAGER', 'Project Deleted', 'Hi {empname}, {projectname} has been deleted.', 'Project has been deleted.', 1, '2021-05-11 15:02:28.289711', '2021-05-11 15:02:28.289711', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (6, 'DELETEAREATOMANAGER', 'Area Deleted', 'Hi {empname}, {areaname} has been deleted.', 'Area has been deleted.', 1, '2021-05-11 15:06:00.448421', '2021-05-11 15:06:00.448421', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (15, 'DELETEQUESTIONTOMANAGER', 'Question Deleted', 'Hi {empname}, {questionname} has been deleted.', 'Question has been deleted.', 1, '2021-05-11 15:16:59.102904', '2021-05-11 15:16:59.102904', 'DOE1', NULL, 'manager');
+INSERT INTO public.notification VALUES (18, 'CHANGEPASSWORD', 'Change Password Successful', 'Hi {empname}, Password changed successfully.', 'Password changed successfully.', 1, '2021-05-11 19:32:51.028855', '2021-05-11 19:32:51.028855', 'DOE1', NULL, 'admin,manager,teamMember');
+
+
+--
+-- TOC entry 3034 (class 0 OID 0)
+-- Dependencies: 241
+-- Name: notification_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.notification_id_seq', 30, true);
+
+
+-- Completed on 2021-07-13 15:11:10 IST
+
+--
+-- PostgreSQL database dump complete
+--
+
