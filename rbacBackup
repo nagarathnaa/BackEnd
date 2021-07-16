@@ -1,0 +1,86 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 12.6 (Debian 12.6-1.pgdg100+1)
+-- Dumped by pg_dump version 13.2
+
+-- Started on 2021-04-27 20:18:39 IST
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 3019 (class 0 OID 17202)
+-- Dependencies: 207
+-- Data for Name: rbac; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Audit Trail', 'admin,tester', '2021-03-26 19:47:08.965005', '2021-04-24 12:42:23.921121', 'no', 'fas fa-file-alt', '/audit', 14, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Overview', 'admin,manager', '2021-03-01 10:22:10.323842', '2021-03-01 11:10:01.557462', 'no', 'mdi mdi-history', '/overview', 1, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Assessment Taking', 'teamMember,tester', '2021-02-22 06:26:42.205993', '2021-04-24 12:39:49.860804', 'no', 'mdi mdi mdi-poll-box', '/assessmenttakingform', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Assign Team Member', 'admin,manager,tester', '2021-02-10 18:35:16.87789', '2021-04-24 12:40:14.971664', 'no', 'mdi mdi-file-document-box-check-outline', '/viewUsers', 6, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Add Role', 'admin,tester', '2021-02-10 18:29:01.490119', '2021-04-24 12:49:35.386052', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Edit Email configuration', 'admin,manager,tester', '2021-02-10 18:39:32.624695', '2021-04-24 12:43:26.121111', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Functionality', 'admin,tester', '2021-02-09 11:11:00.738628', '2021-04-24 12:50:56.086259', 'no', 'mdi mdi-note-plus', '/addfunctionality', 8, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Add User', 'teamMember,tester', '2021-02-10 18:35:16.87789', '2021-04-24 12:40:19.406425', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Delete Sub Functionality', 'manager,tester', '2021-02-10 18:25:10.741835', '2021-04-24 12:40:28.481887', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Assessment Reports', 'admin,manager,tester', '2021-02-20 09:32:35.284968', '2021-04-24 12:43:45.765485', 'no', 'mdi mdi-history', '/reports', 2, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('View Role', 'admin,tester', '2021-02-10 18:29:01.490119', '2021-04-24 12:49:42.741549', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('User Dashboard', 'teamMember,tester', '2021-02-22 07:26:34.378917', '2021-04-24 12:40:33.436601', 'no', 'mdi mdi-view-dashboard', '/userDashboard', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Add Project', 'admin,tester', '2021-02-02 10:55:41.386694', '2021-04-24 12:44:44.195816', 'no', 'mdi mdi-note-plus', '/addproject', 3, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Add Questions', 'admin,tester', '2021-02-10 18:26:57.40565', '2021-04-24 12:44:54.625857', 'no', 'mdi mdi-note-plus', '/addquestions', 10, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Delete Role', 'admin,tester', '2021-02-10 18:29:01.490119', '2021-04-24 12:49:49.591315', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('View Area', 'manager,tester', '2021-02-06 01:22:56.488809', '2021-04-24 12:40:38.455823', 'no', 'mdi mdi-file-table-box-multiple', '/viewArea', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('View Project', 'admin,tester', '2021-02-04 04:12:27.74033', '2021-04-24 12:46:23.830993', 'no', 'mdi mdi-file-table-box-multiple', '/viewproject', 4, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('View Functionality', 'manager,tester', '2021-02-10 18:23:04.464276', '2021-04-24 12:40:43.291549', 'no', 'mdi mdi-file-table-box-multiple', '/viewFunctionality', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('View Company Profile', 'admin,manager,tester', '2021-02-10 18:35:16.87789', '2021-04-24 12:46:30.621092', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Edit Sub Functionality', 'admin,tester', '2021-02-10 18:25:10.741835', '2021-04-24 12:40:48.151104', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Edit RBAC', 'admin,tester', '2021-02-10 18:39:32.624695', '2021-04-24 12:51:04.141172', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Edit Project', 'admin,tester', '2021-02-04 04:16:30.430247', '2021-04-24 12:49:03.735936', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Edit Company Profile', 'admin,tester', '2021-02-10 18:35:16.87789', '2021-04-24 12:49:57.301201', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Delete Project', 'admin,tester', '2021-02-04 06:46:53.428489', '2021-04-24 12:49:10.081586', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Edit Questions', 'admin,tester', '2021-02-10 18:26:57.40565', '2021-04-24 12:49:19.106777', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Edit User', 'admin,tester', '2021-02-10 18:35:16.87789', '2021-04-24 12:50:04.06116', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Edit Functionality', 'admin,tester', '2021-02-10 18:23:04.464276', '2021-04-24 12:51:10.986229', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Delete User', 'admin,tester', '2021-02-10 18:35:16.87789', '2021-04-24 12:50:09.991274', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('View RBAC', 'admin,tester', '2021-02-10 18:39:32.624695', '2021-04-24 12:50:16.471633', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('View Questions', 'admin,tester', '2021-02-10 18:26:57.40565', '2021-04-24 12:40:52.341324', 'no', 'mdi mdi-file-document-box-check-outline', '/viewQuestion', 11, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Delete Functionality', 'admin,tester', '2021-02-10 18:23:04.464276', '2021-04-24 12:51:16.620975', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('View Sub Functionality', 'manager,tester', '2021-02-10 18:25:10.741835', '2021-04-24 12:41:21.676111', 'no', 'mdi mdi-file-table-box-multiple', '/viewSubFunctionality', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Assessment Acceptance ', 'admin,manager,tester', '2021-02-22 06:19:58.114616', '2021-04-24 12:50:23.980736', 'no', 'mdi mdi mdi-poll-box', '/assessmentacceptanceform', 12, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Delete Questions', 'admin,tester', '2021-02-10 18:26:57.40565', '2021-04-24 12:49:26.891368', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Area', 'admin,tester', '2021-02-06 01:12:55.400452', '2021-04-24 12:50:32.31091', 'no', 'mdi mdi-note-plus', '/addarea', 7, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Sub Functionality', 'admin,tester', '2021-02-10 18:25:10.741835', '2021-04-24 12:51:22.651165', 'no', 'mdi mdi-note-plus', '/addsubfunctionality', 9, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Edit Area', 'admin,tester', '2021-02-06 01:26:58.905721', '2021-04-24 12:50:40.901133', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Add Email configuration', 'admin,tester', '2021-02-10 18:39:32.624695', '2021-04-24 12:51:34.611674', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Delete Area', 'admin,tester', '2021-02-06 01:29:28.950816', '2021-04-24 12:50:48.176098', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('View Email configuration', 'admin,tester', '2021-02-10 18:39:32.624695', '2021-04-24 12:51:40.56151', 'yes', '', '', NULL, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Assign Project Manager', 'admin,tester', '2021-02-20 09:29:45.96021', '2021-04-24 12:51:53.96613', 'no', 'mdi mdi-file-document-box-check-outline', '/viewProjectManager', 5, NULL);
+INSERT INTO public.rbac(feature, roles, creationdatetime, updationdatetime, button, icon, url, "order", modifiedby) VALUES ('Settings', 'admin,tester', '2021-02-24 03:52:21.409198', '2021-04-24 12:52:07.871072', 'no', 'mdi mdi-settings', '/settings', 13, NULL);
+
+
+--
+-- TOC entry 3026 (class 0 OID 0)
+-- Dependencies: 206
+-- Name: rbac_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.rbac_id_seq', 63, true);
+
+
+-- Completed on 2021-04-27 20:19:00 IST
+
+--
+-- PostgreSQL database dump complete
+--
+
