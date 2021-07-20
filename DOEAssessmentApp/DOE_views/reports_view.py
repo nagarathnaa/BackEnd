@@ -362,6 +362,7 @@ def achievedpercentagebyfunctionality():
     """
     try:
         results = []
+        recommendation = None
         assessmentcompletionforfunc = 0
         achievedpercentageforfunc = 0
         countofnaques = 0
@@ -388,6 +389,8 @@ def achievedpercentagebyfunctionality():
                         json_data = mergedict({'id': d.id},
                                               {'name': d.name},
                                               {'description': d.description},
+                                              {'priority': d.priority},
+                                              {'recommendation': d.recommendation},
                                               {'retake_assessment_days': d.retake_assessment_days},
                                               {'area_id': d.area_id},
                                               {'proj_id': d.proj_id},
@@ -452,7 +455,38 @@ def achievedpercentagebyfunctionality():
                             if prevachievedpercentage != achievedpercentage:
                                 functionality_data.first().prevachievedpercentage = prevachievedpercentage
                             functionality_data.first().achievedpercentage = achievedpercentage
+                            if functionality_data.first().priority == 1:
+                                if (achievedpercentage >= 81) and (achievedpercentage <= 100):
+                                    recommendation = None
+                                else:
+                                    recommendation = "Bad ! Achieved percentage should be at-least " \
+                                                     "between 81 to 100."
+                            elif functionality_data.first().priority == 2:
+                                if (achievedpercentage >= 61) and (achievedpercentage <= 80):
+                                    recommendation = None
+                                else:
+                                    recommendation = "Bad ! Achieved percentage should be at-least " \
+                                                     "between 61 to 80."
+                            elif functionality_data.first().priority == 3:
+                                if (achievedpercentage >= 41) and (achievedpercentage <= 60):
+                                    recommendation = None
+                                else:
+                                    recommendation = "Bad ! Achieved percentage should be at-least " \
+                                                     "between 41 to 60."
+                            elif functionality_data.first().priority == 4:
+                                if (achievedpercentage >= 21) and (achievedpercentage <= 40):
+                                    recommendation = None
+                                else:
+                                    recommendation = "Bad ! Achieved percentage should be at-least " \
+                                                     "between 21 to 40."
+                            elif functionality_data.first().priority == 5:
+                                if (achievedpercentage >= 0) and (achievedpercentage <= 20):
+                                    recommendation = None
+                                else:
+                                    recommendation = "Bad ! Achieved percentage should be at-least " \
+                                                     "between 0 to 20."
                             functionality_data.first().achievedlevel = achievedlevel
+                            functionality_data.first().recommendation = recommendation
                             functionality_data.first().modifiedby = None
                             db.session.add(functionality_data.first())
                             db.session.commit()
@@ -466,6 +500,8 @@ def achievedpercentagebyfunctionality():
                             json_data = mergedict({'id': d.id},
                                                   {'name': d.name},
                                                   {'description': d.description},
+                                                  {'priority': d.priority},
+                                                  {'recommendation': d.recommendation},
                                                   {'retake_assessment_days': d.retake_assessment_days},
                                                   {'area_id': d.area_id},
                                                   {'proj_id': d.proj_id},
@@ -499,7 +535,8 @@ def achievedpercentagebyfunctionality():
                                                       "achievedlevel": d.achievedlevel,
                                                       "prevassessmentcompletion": str(d.prevassessmentcompletion),
                                                       "prevachievedpercentage": str(
-                                                          d.prevachievedpercentage)})), 200
+                                                          d.prevachievedpercentage),
+                                                      "recommendation": recommendation})), 200
                     # end region
                     else:
                         subfunctionality_data = Subfunctionality.query.filter(Subfunctionality.proj_id == projid,
@@ -548,7 +585,38 @@ def achievedpercentagebyfunctionality():
                                 if prevachievedpercentage != achievedpercentage:
                                     functionality_data.first().prevachievedpercentage = prevachievedpercentage
                                 functionality_data.first().achievedpercentage = achievedpercentage
+                                if functionality_data.first().priority == 1:
+                                    if (achievedpercentage >= 81) and (achievedpercentage <= 100):
+                                        recommendation = None
+                                    else:
+                                        recommendation = "Bad ! Achieved percentage should be at-least " \
+                                                         "between 81 to 100."
+                                elif functionality_data.first().priority == 2:
+                                    if (achievedpercentage >= 61) and (achievedpercentage <= 80):
+                                        recommendation = None
+                                    else:
+                                        recommendation = "Bad ! Achieved percentage should be at-least " \
+                                                         "between 61 to 80."
+                                elif functionality_data.first().priority == 3:
+                                    if (achievedpercentage >= 41) and (achievedpercentage <= 60):
+                                        recommendation = None
+                                    else:
+                                        recommendation = "Bad ! Achieved percentage should be at-least " \
+                                                         "between 41 to 60."
+                                elif functionality_data.first().priority == 4:
+                                    if (achievedpercentage >= 21) and (achievedpercentage <= 40):
+                                        recommendation = None
+                                    else:
+                                        recommendation = "Bad ! Achieved percentage should be at-least " \
+                                                         "between 21 to 40."
+                                elif functionality_data.first().priority == 5:
+                                    if (achievedpercentage >= 0) and (achievedpercentage <= 20):
+                                        recommendation = None
+                                    else:
+                                        recommendation = "Bad ! Achieved percentage should be at-least " \
+                                                         "between 0 to 20."
                                 functionality_data.first().achievedlevel = achievedlevel
+                                functionality_data.first().recommendation = recommendation
                                 functionality_data.first().modifiedby = None
                                 db.session.add(functionality_data.first())
                                 db.session.commit()
@@ -562,6 +630,8 @@ def achievedpercentagebyfunctionality():
                                 json_data = mergedict({'id': d.id},
                                                       {'name': d.name},
                                                       {'description': d.description},
+                                                      {'priority': d.priority},
+                                                      {'recommendation': d.recommendation},
                                                       {'retake_assessment_days': d.retake_assessment_days},
                                                       {'area_id': d.area_id},
                                                       {'proj_id': d.proj_id},
@@ -595,7 +665,8 @@ def achievedpercentagebyfunctionality():
                                                           "achievedlevel": d.achievedlevel,
                                                           "prevassessmentcompletion": str(d.prevassessmentcompletion),
                                                           "prevachievedpercentage": str(
-                                                              d.prevachievedpercentage)})), 200
+                                                              d.prevachievedpercentage),
+                                                          "recommendation": recommendation})), 200
                         else:
                             return make_response(jsonify({"msg": "No Sub-functionality data found!!"})), 404
             else:
