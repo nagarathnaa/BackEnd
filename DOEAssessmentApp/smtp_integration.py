@@ -5,7 +5,7 @@ import email.message
 def trigger_mail(sent_from, to, host, password, subject, recipientname, mailbody):
     email_content = """
     <html><body style='background-color:powderblue;'>
-    """+mailbody+"""<br/><br/>
+    """ + mailbody + """<br/><br/>
     Regards,<br/>
     DevOps Enabler & Co.
     </body></html>
@@ -26,4 +26,4 @@ def trigger_mail(sent_from, to, host, password, subject, recipientname, mailbody
         server.close()
         return 'Email sent!'
     except Exception as e:
-        return 'Something went wrong...'+str(e)
+        return 'Something went wrong...' + str(e)

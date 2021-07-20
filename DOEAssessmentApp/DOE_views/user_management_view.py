@@ -1,4 +1,4 @@
-from flask import *
+from flask import Blueprint, session, request, jsonify, make_response
 from sqlalchemy import or_
 from DOEAssessmentApp import app, db
 from DOEAssessmentApp.DOE_models.company_user_details_model import Companyuserdetails
@@ -16,7 +16,7 @@ colsusermanagement = ['id', 'empid', 'empname', 'emprole', 'empemail', 'emppassw
 
 
 @user_management_view.route('/api/usermanagement', methods=['GET', 'POST'])
-def getAndPost():
+def getandpost():
     """
         ---
         get:
@@ -132,7 +132,7 @@ def getAndPost():
 
 
 @user_management_view.route('/api/updelusermanagement/', methods=['POST', 'PUT', 'DELETE'])
-def updateAndDelete():
+def updateanddelete():
     """
         ---
         post:

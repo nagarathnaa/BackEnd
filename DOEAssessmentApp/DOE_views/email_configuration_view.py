@@ -1,4 +1,4 @@
-from flask import *
+from flask import Blueprint, session, request, jsonify, make_response
 from DOEAssessmentApp import db
 from DOEAssessmentApp.DOE_models.email_configuration_model import Emailconfiguration
 from DOEAssessmentApp.DOE_models.company_user_details_model import Companyuserdetails
@@ -88,12 +88,12 @@ def emailconfigs():
                         db.session.add(auditins)
                         db.session.commit()
                         # end region
-                        return make_response(jsonify({"message": f"Email Configuration successfully inserted "
-                                                                 f"for your company",
+                        return make_response(jsonify({"message": "Email Configuration successfully inserted"
+                                                                 " for your company",
                                                       "data": result[0]})), 201
                     else:
-                        return make_response(jsonify({"message": f"Email Configuration already exists for "
-                                                                 f"your company"})), 400
+                        return make_response(jsonify({"message": "Email Configuration already exists for"
+                                                                 " your company"})), 400
             else:
                 return make_response(jsonify({"message": resp})), 401
         else:
@@ -191,8 +191,8 @@ def updelemailconfig():
                         db.session.add(auditins)
                         db.session.commit()
                         # end region
-                        return make_response(jsonify({"message": f"Email Configuration successfully updated "
-                                                                 f"for your company",
+                        return make_response(jsonify({"message": "Email Configuration successfully updated"
+                                                                 " for your company",
                                                       "data": result[0]})), 200
             else:
                 return make_response(jsonify({"message": resp})), 401

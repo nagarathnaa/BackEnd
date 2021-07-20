@@ -1,4 +1,4 @@
-from flask import *
+from flask import Blueprint, session, request, jsonify, make_response
 from DOEAssessmentApp import app, db
 from DOEAssessmentApp.DOE_models.assessment_model import Assessment
 from DOEAssessmentApp.DOE_models.project_model import Project
@@ -92,7 +92,6 @@ def getandpost():
                     empname = userdata.empname
                     companyid = userdata.companyid
                     mailto = userdata.empemail
-                    project_details = Project.query.filter_by(id=projid).first()
                     emailconf = Emailconfiguration.query.filter_by(companyid=companyid).first()
                     if emailconf.email == 'default' and emailconf.host == 'default' \
                             and emailconf.password == 'default':
@@ -280,7 +279,8 @@ def getandpost():
                                                              'comment': user.comment,
                                                              'assessmentstatus': user.assessmentstatus,
                                                              'assessmenttakendatetime': user.assessmenttakendatetime,
-                                                             'assessmentrevieweddatetime': user.assessmentrevieweddatetime,
+                                                             'assessmentrevieweddatetime': user.
+                                                             assessmentrevieweddatetime,
                                                              'active': user.active,
                                                              'creationdatetime': user.creationdatetime,
                                                              'updationdatetime': user.updationdatetime,
@@ -306,7 +306,8 @@ def getandpost():
                                                              'comment': user.comment,
                                                              'assessmentstatus': user.assessmentstatus,
                                                              'assessmenttakendatetime': user.assessmenttakendatetime,
-                                                             'assessmentrevieweddatetime': user.assessmentrevieweddatetime,
+                                                             'assessmentrevieweddatetime': user.
+                                                             assessmentrevieweddatetime,
                                                              'active': user.active,
                                                              'creationdatetime': user.creationdatetime,
                                                              'updationdatetime': user.updationdatetime,
@@ -789,9 +790,8 @@ def updateanddelete():
                                     notification_data = Notification.query.filter_by(
                                         event_name="ASSESSMENTASSOCIATIONTOTM").first()
                                     mail_subject = notification_data.mail_subject
-                                    mail_body = str(notification_data.mail_body).format(empname=empname,
-                                                                                        employeeassignedstatus="associated",
-                                                                                        name=name)
+                                    mail_body = str(notification_data.mail_body).\
+                                        format(empname=empname, employeeassignedstatus="associated", name=name)
                                     mailout = trigger_mail(mailfrom, mailto, host, pwd, mail_subject, empname,
                                                            mail_body)
                                     print("======", mailout)
@@ -805,9 +805,9 @@ def updateanddelete():
                                     notification_data = Notification.query.filter_by(
                                         event_name="ASSESSMENTASSOCIATIONTOMANAGER").first()
                                     mail_subject = notification_data.mail_subject
-                                    mail_body = str(notification_data.mail_body).format(managername=mailtoname,
-                                                                                        employeeassignedstatus="associated",
-                                                                                        empname=empname, name=name)
+                                    mail_body = str(notification_data.mail_body).\
+                                        format(managername=mailtoname, employeeassignedstatus="associated",
+                                               empname=empname, name=name)
                                     mailout = trigger_mail(mailfrom, mailto, host, pwd, mail_subject, empname,
                                                            mail_body)
                                     print("======", mailout)
@@ -877,9 +877,8 @@ def updateanddelete():
                                     notification_data = Notification.query.filter_by(
                                         event_name="ASSESSMENTASSOCIATIONTOTM").first()
                                     mail_subject = notification_data.mail_subject
-                                    mail_body = str(notification_data.mail_body).format(empname=empname,
-                                                                                        employeeassignedstatus="disassociated",
-                                                                                        name=name)
+                                    mail_body = str(notification_data.mail_body).\
+                                        format(empname=empname, employeeassignedstatus="disassociated", name=name)
                                     mailout = trigger_mail(mailfrom, mailto, host, pwd, mail_subject, empname,
                                                            mail_body)
                                     print("======", mailout)
@@ -893,9 +892,9 @@ def updateanddelete():
                                     notification_data = Notification.query.filter_by(
                                         event_name="ASSESSMENTASSOCIATIONTOMANAGER").first()
                                     mail_subject = notification_data.mail_subject
-                                    mail_body = str(notification_data.mail_body).format(managername=mailtoname,
-                                                                                        employeeassignedstatus="disassociated",
-                                                                                        empname=empname, name=name)
+                                    mail_body = str(notification_data.mail_body).\
+                                        format(managername=mailtoname, employeeassignedstatus="disassociated",
+                                               empname=empname, name=name)
                                     mailout = trigger_mail(mailfrom, mailto, host, pwd, mail_subject, empname,
                                                            mail_body)
                                     print("======", mailout)
@@ -932,8 +931,8 @@ def fetchprojectassigntoteam():
                     res = request.get_json(force=True)
                     emp_id = res['emp_id']
                     data = Assessment.query.distinct(Assessment.projectid).filter(Assessment.emp_id == emp_id,
-                                                                                  Assessment.employeeassignedstatus
-                                                                                  == 1)
+                                                                                  Assessment.
+                                                                                  employeeassignedstatus == 1)
                     lists = []
                     for user in data:
                         project_data = Project.query.filter(Project.id == user.projectid)
@@ -1000,13 +999,9 @@ def fetchfunctionalitynametoteam():
                     emp_id = res['emp_id']
                     projectid = res['projectid']
                     area_id = res['area_id']
-                    data = Assessment.query.distinct(Assessment.functionality_id).filter(Assessment.emp_id == emp_id,
-                                                                                         Assessment.projectid
-                                                                                         == projectid,
-                                                                                         Assessment.area_id
-                                                                                         == area_id,
-                                                                                         Assessment.
-                                                                                         employeeassignedstatus == 1)
+                    data = Assessment.query.distinct(Assessment.functionality_id).\
+                        filter(Assessment.emp_id == emp_id, Assessment.projectid == projectid,
+                               Assessment.area_id == area_id, Assessment.employeeassignedstatus == 1)
                     lists = []
                     for user in data:
                         functionality_data = Functionality.query.filter(
@@ -1042,15 +1037,10 @@ def fetchsubfunctionalitynametoteam():
                     projectid = res['projectid']
                     area_id = res['area_id']
                     functionality_id = res['functionality_id']
-                    data = Assessment.query.distinct(Assessment.subfunctionality_id).filter(Assessment.emp_id == emp_id,
-                                                                                            Assessment.projectid
-                                                                                            == projectid,
-                                                                                            Assessment.area_id
-                                                                                            == area_id,
-                                                                                            Assessment.functionality_id
-                                                                                            == functionality_id,
-                                                                                            Assessment.
-                                                                                            employeeassignedstatus == 1)
+                    data = Assessment.query.distinct(Assessment.subfunctionality_id).\
+                        filter(Assessment.emp_id == emp_id, Assessment.projectid == projectid,
+                               Assessment.area_id == area_id, Assessment.functionality_id == functionality_id,
+                               Assessment.employeeassignedstatus == 1)
                     lists = []
                     for user in data:
                         if user.subfunctionality_id is not None:

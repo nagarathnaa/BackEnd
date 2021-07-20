@@ -1,5 +1,5 @@
 import uuid
-from flask import *
+from flask import Blueprint, request, jsonify, make_response
 from DOEAssessmentApp import db
 from DOEAssessmentApp.DOE_models.company_details_model import Companydetails
 from DOEAssessmentApp.DOE_models.company_user_details_model import Companyuserdetails
@@ -78,10 +78,10 @@ def companydetail():
                 db.session.add(compuserdet)
                 db.session.commit()
                 return make_response(jsonify({"msg": f"Company details with Company Name {cname} "
-                                                         f"successfully inserted."})), 201
+                                                     f"successfully inserted."})), 201
             else:
                 return make_response(jsonify({"msg": f"Company details with Company Name {cname} "
-                                                         f"already exists."})), 400
+                                                     f"already exists."})), 400
     except Exception as e:
         return make_response(jsonify({"msg": str(e)})), 500
 

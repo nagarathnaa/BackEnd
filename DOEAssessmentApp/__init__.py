@@ -4,7 +4,7 @@ app config initialization
 
 import logging
 from datetime import timedelta
-from flask import Flask, jsonify
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS
@@ -31,7 +31,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 global COOKIE_TIME_OUT
-COOKIE_TIME_OUT = 60*60*24  # 24 hours
+COOKIE_TIME_OUT = 60 * 60 * 24  # 24 hours
 # COOKIE_TIME_OUT = 60*5  # 5 mins
 
 if configs.dev_configs_from_file:
@@ -43,4 +43,3 @@ db = SQLAlchemy(app)
 
 # Init ma
 ma = Marshmallow(app)
-

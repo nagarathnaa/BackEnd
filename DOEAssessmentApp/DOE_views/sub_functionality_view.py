@@ -1,4 +1,4 @@
-from flask import *
+from flask import Blueprint, session, request, jsonify, make_response
 from DOEAssessmentApp import app, db
 from DOEAssessmentApp.DOE_models.company_user_details_model import Companyuserdetails
 from DOEAssessmentApp.DOE_models.email_configuration_model import Emailconfiguration
@@ -18,7 +18,7 @@ colsquestion = ['id', 'name', 'answer_type', 'answers', 'maxscore', 'subfunc_id'
 
 
 @sub_functionality_view.route('/api/subfunctionality', methods=['GET', 'POST'])
-def getAndPost():
+def getandpost():
     """
         ---
         get:
@@ -102,10 +102,9 @@ def getAndPost():
                                                                  func_id=subfunc_func_id).count()
 
                     if countofquesinfunc == 0:
-                        existing_subfunctionality = Subfunctionality.query.filter(Subfunctionality.name ==
-                                                                                  subfunc_name,
-                                                                                  Subfunctionality.func_id ==
-                                                                                  subfunc_func_id).one_or_none()
+                        existing_subfunctionality = Subfunctionality.query.\
+                            filter(Subfunctionality.name == subfunc_name, Subfunctionality.func_id == subfunc_func_id).\
+                            one_or_none()
                         if existing_subfunctionality is None:
                             subfuncins = Subfunctionality(subfunc_name, subfunc_desc, subfunc_retake_assess,
                                                           subfunc_func_id, subfunc_area_id, subfunc_pro_id,
@@ -188,7 +187,7 @@ def getAndPost():
 
 
 @sub_functionality_view.route('/api/updelsubfunctionality/', methods=['POST', 'PUT', 'DELETE'])
-def updateAndDelete():
+def updateanddelete():
     """
         ---
         post:

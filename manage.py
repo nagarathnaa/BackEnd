@@ -5,8 +5,8 @@
 
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
-from DOEAssessmentApp import app, db
-from flask import *
+from DOEAssessmentApp import db
+from flask import jsonify
 from DOEAssessmentApp import app
 from swagger import swagger_ui_blueprint, SWAGGER_URL
 from api_spec import spec
@@ -24,9 +24,6 @@ from DOEAssessmentApp.DOE_views.project_assignment_to_manager_view import assign
 from DOEAssessmentApp.DOE_views.question_view import question
 from DOEAssessmentApp.DOE_views.trn_team_member_assessment_view import assessment
 from DOEAssessmentApp.DOE_views.reports_view import reports
-from DOEAssessmentApp.DOE_views.tools_login_views import loginconfig
-from DOEAssessmentApp.DOE_views.tools_jenkins_view import tools
-from DOEAssessmentApp.DOE_views.tools_github_view import gits
 from DOEAssessmentApp.DOE_views.audittrail_view import audittrail
 from DOEAssessmentApp.DOE_views.notification_view import notific
 
@@ -44,9 +41,6 @@ app.register_blueprint(assigningprojectmanager)
 app.register_blueprint(question)
 app.register_blueprint(assessment)
 app.register_blueprint(reports)
-app.register_blueprint(loginconfig)
-app.register_blueprint(tools)
-app.register_blueprint(gits)
 app.register_blueprint(audittrail)
 app.register_blueprint(notific)
 

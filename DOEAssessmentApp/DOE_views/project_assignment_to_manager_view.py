@@ -1,4 +1,4 @@
-from flask import *
+from flask import Blueprint, session, request, jsonify, make_response
 from DOEAssessmentApp import app, db
 from DOEAssessmentApp.DOE_models.project_model import Project
 from DOEAssessmentApp.DOE_models.project_assignment_to_manager_model import Projectassignmenttomanager
@@ -86,11 +86,9 @@ def getandpost():
                     res = request.get_json(force=True)
                     pm_id = res['emp_id']
                     pm_project_id = res['project_id']
-                    existing_projectmanager = Projectassignmenttomanager.query.filter(Projectassignmenttomanager.emp_id
-                                                                                      == pm_id,
-                                                                                      Projectassignmenttomanager.
-                                                                                      project_id
-                                                                                      == pm_project_id).one_or_none()
+                    existing_projectmanager = Projectassignmenttomanager.query.\
+                        filter(Projectassignmenttomanager.emp_id == pm_id,
+                               Projectassignmenttomanager. project_id == pm_project_id).one_or_none()
                     userdata = Companyuserdetails.query.filter_by(empid=pm_id).first()
                     empname = userdata.empname
                     companyid = userdata.companyid
@@ -240,7 +238,8 @@ def updateanddelete():
                                 mail_subject = notification_data.mail_subject
                                 mail_body = str(notification_data.mail_body).format(empname=empname,
                                                                                     status="associated",
-                                                                                    projectname=project_details.first().name)
+                                                                                    projectname=project_details.first()
+                                                                                    .name)
                                 mailout = trigger_mail(mailfrom, mailto, host, pwd, mail_subject, empname, mail_body)
                                 print("======", mailout)
                                 # end region
@@ -293,7 +292,8 @@ def updateanddelete():
                                 mail_subject = notification_data.mail_subject
                                 mail_body = str(notification_data.mail_body).format(empname=empname,
                                                                                     status="disassociated",
-                                                                                    projectname=project_details.first().name)
+                                                                                    projectname=project_details.first()
+                                                                                    .name)
                                 mailout = trigger_mail(mailfrom, mailto, host, pwd, mail_subject, empname, mail_body)
                                 print("======", mailout)
                                 # end region

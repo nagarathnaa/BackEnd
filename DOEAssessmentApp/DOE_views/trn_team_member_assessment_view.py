@@ -1,6 +1,5 @@
 import datetime
-from flask import *
-from sqlalchemy import desc
+from flask import Blueprint, session, request, jsonify, make_response
 from DOEAssessmentApp import app, db
 from DOEAssessmentApp.DOE_models.assessment_model import Assessment
 from DOEAssessmentApp.DOE_models.project_model import Project
@@ -99,12 +98,14 @@ def submitassessment():
                     results.clear()
                     checkifeligibledata = Assessment.query.filter_by(id=assessmentid).first()
                     if checkifeligibledata.assessmentretakedatetime is not None and \
-                            (checkifeligibledata.assessmentretakedatetime.replace(microsecond=0) -
-                             datetime.datetime.now().replace(microsecond=0)).total_seconds() > 0:
-                        return make_response(jsonify({"msg": f"Your are not allowed to take the assessment "
-                                                             f"now!! Please take it on "
-                                                             + str(checkifeligibledata.assessmentretakedatetime.
-                                                                   replace(microsecond=0))})), 200
+                            (checkifeligibledata.assessmentretakedatetime.
+                             replace(microsecond=0) - datetime.datetime.now().
+                             replace(microsecond=0)).total_seconds() > 0:
+                        return make_response(jsonify({"msg": "Your are not allowed to take the assessment "
+                                                             "now!! Please take it on " + str(checkifeligibledata.
+                                                                                              assessmentretakedatetime.
+                                                                                              replace(microsecond=0))})
+                                             ), 200
                     else:
                         data_proj = Project.query.filter_by(id=projid).first()
                         assessmenttakendatetime = datetime.datetime.now()
@@ -126,7 +127,6 @@ def submitassessment():
                                 mailout = trigger_mail(mailfrom, mailto, host, pwd, mail_subject, empname, mail_body)
                                 print("======", mailout)
                                 # end region
-
 
                         else:
                             assessmentstatus = "PENDING FOR REVIEW"
@@ -288,7 +288,7 @@ def submitassessment():
                             db.session.commit()
                             # end region
                         if isdraft == 0:
-                            return make_response(jsonify({"msg": f"Assessment submitted successfully!!"})), 200
+                            return make_response(jsonify({"msg": "Assessment submitted successfully!!"})), 200
                         else:
 
                             # region mail notification
@@ -299,7 +299,7 @@ def submitassessment():
                             mailout = trigger_mail(mailfrom, mailto, host, pwd, mail_subject, empname, mail_body)
                             print("======", mailout)
                             # end region
-                            return make_response(jsonify({"msg": f"Assessment saved as draft successfully!!"})), 200
+                            return make_response(jsonify({"msg": "Assessment saved as draft successfully!!"})), 200
             else:
                 return make_response(jsonify({"msg": resp})), 401
         else:
@@ -444,7 +444,7 @@ def reviewassessment():
                         db.session.add(auditins)
                         db.session.commit()
                         # end region
-                    return make_response(jsonify({"msg": f"Thank you for reviewing the assessment!!"})), 200
+                    return make_response(jsonify({"msg": "Thank you for reviewing the assessment!!"})), 200
             else:
                 return make_response(jsonify({"msg": resp})), 401
         else:
@@ -573,12 +573,11 @@ def getassessmenttaking():
                                                                  " gone for manager's review."})), 200
                         else:
                             if checkifeligibledata.assessmentretakedatetime is not None and \
-                                    (checkifeligibledata.assessmentretakedatetime.replace(microsecond=0) -
-                                     datetime.datetime.now().replace(microsecond=0)).total_seconds() > 0:
-                                return make_response(jsonify({"msg": f"Your are not allowed to take the assessment "
-                                                                     f"now!! Please take it on "
-                                                                     + str(checkifeligibledata.assessmentretakedatetime.
-                                                                           replace(microsecond=0))})), 200
+                                    (checkifeligibledata.assessmentretakedatetime.replace(microsecond=0) - datetime.
+                                     datetime.now().replace(microsecond=0)).total_seconds() > 0:
+                                rtm = checkifeligibledata.assessmentretakedatetime.replace(microsecond=0)
+                                return make_response(jsonify({"msg": "Your are not allowed to take the assessment "
+                                                                     "now!! Please take it on " + str(rtm)})), 200
                             else:
                                 lists = []
                                 for user in data:

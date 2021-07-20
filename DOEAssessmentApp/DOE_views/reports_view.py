@@ -1,4 +1,4 @@
-from flask import *
+from flask import Blueprint, session, request, jsonify, make_response
 import requests
 from DOEAssessmentApp import db
 from DOEAssessmentApp.DOE_models.assessment_model import Assessment
@@ -95,10 +95,10 @@ def achievedpercentagebyprojects():
                             print(scode, flush=True)
                             print(response.json(), flush=True)
                             if scode == 200:
-                                assessmentcompletionforproj = assessmentcompletionforproj + \
-                                                              int(float(response.json()['assessmentcompletion']))
-                                achievedpercentageforproj = achievedpercentageforproj + int(float(response.json()[
-                                    'achievedpercentage']))
+                                assessmentcompletionforproj = assessmentcompletionforproj + int(
+                                    float(response.json()['assessmentcompletion']))
+                                achievedpercentageforproj = achievedpercentageforproj + int(
+                                    float(response.json()['achievedpercentage']))
                         assessmentcompletion = assessmentcompletionforproj / areacount
                         achievedpercentage = achievedpercentageforproj / areacount
                         try:
@@ -254,10 +254,10 @@ def achievedpercentagebyarea():
                             print(scode, flush=True)
                             print(response.json(), flush=True)
                             if scode == 200:
-                                assessmentcompletionforarea = assessmentcompletionforarea + \
-                                                              int(float(response.json()['assessmentcompletion']))
-                                achievedpercentageforarea = achievedpercentageforarea + int(float(response.json()[
-                                    'achievedpercentage']))
+                                assessmentcompletionforarea = assessmentcompletionforarea + int(
+                                    float(response.json()['assessmentcompletion']))
+                                achievedpercentageforarea = achievedpercentageforarea + int(
+                                    float(response.json()['achievedpercentage']))
                         assessmentcompletion = assessmentcompletionforarea / funccount
                         achievedpercentage = achievedpercentageforarea / funccount
                         try:
@@ -427,8 +427,8 @@ def achievedpercentagebyfunctionality():
                         if countofnaques != 0:
                             countofquestions = countofquestions - countofnaques
                         if countofquestions != 0:
-                            assessmentcompletion = ((countofquestionanswered /
-                                                     assessment_data.count()) / countofquestions) * 100
+                            assessmentcompletion = ((countofquestionanswered / assessment_data.
+                                                     count()) / countofquestions) * 100
                             achievedpercentage = (scoreachievedforthefunc / maxscoreforthefunc) * 100
                         else:
                             assessmentcompletion = 0
@@ -504,8 +504,8 @@ def achievedpercentagebyfunctionality():
                     else:
                         subfunctionality_data = Subfunctionality.query.filter(Subfunctionality.proj_id == projid,
                                                                               Subfunctionality.area_id == area_id,
-                                                                              Subfunctionality.func_id ==
-                                                                              functionality_id)
+                                                                              Subfunctionality.
+                                                                              func_id == functionality_id)
                         subfunccount = Subfunctionality.query.filter_by(proj_id=projid,
                                                                         area_id=area_id,
                                                                         func_id=functionality_id).count()
@@ -522,12 +522,12 @@ def achievedpercentagebyfunctionality():
                                 print(scode, flush=True)
                                 print(response.json(), flush=True)
                                 if scode == 200:
-                                    assessmentcompletionforfunc = assessmentcompletionforfunc + \
-                                                                  int(float(response.json()['assessmentcompletion']))
-                                    achievedpercentageforfunc = achievedpercentageforfunc + int(float(response.json()[
-                                        'achievedpercentage']))
-                            assessmentcompletion = (
-                                    assessmentcompletionforfunc / subfunccount) if subfunccount > 0 else 0
+                                    assessmentcompletionforfunc = assessmentcompletionforfunc + int(
+                                        float(response.json()['assessmentcompletion']))
+                                    achievedpercentageforfunc = achievedpercentageforfunc + int(
+                                        float(response.json()['achievedpercentage']))
+                            assessmentcompletion = (assessmentcompletionforfunc / subfunccount) if \
+                                subfunccount > 0 else 0
                             achievedpercentage = (achievedpercentageforfunc / subfunccount) if subfunccount > 0 else 0
                             try:
                                 functionality_data = Functionality.query.filter_by(id=functionality_id)
@@ -673,8 +673,8 @@ def achievedpercentagebysubfunctionality():
                         if countofnaques != 0:
                             countofquestions = countofquestions - countofnaques
                         if countofquestions != 0:
-                            assessmentcompletion = ((countofquestionanswered /
-                                                     assessment_data.count()) / countofquestions) * 100
+                            assessmentcompletion = ((countofquestionanswered / assessment_data.
+                                                     count()) / countofquestions) * 100
                             achievedpercentage = (scoreachievedforthefunc / maxscoreforthefunc) * 100
                         else:
                             assessmentcompletion = 0

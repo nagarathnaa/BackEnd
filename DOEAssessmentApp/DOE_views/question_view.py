@@ -1,4 +1,4 @@
-from flask import *
+from flask import Blueprint, session, request, make_response, jsonify
 from DOEAssessmentApp import app, db
 from DOEAssessmentApp.DOE_models.functionality_model import Functionality
 from DOEAssessmentApp.DOE_models.sub_functionality_model import Subfunctionality
@@ -151,7 +151,7 @@ def getaddquestion():
 
 
 @question.route('/api/updelquestion', methods=['POST', 'PUT', 'DELETE'])
-def updateAndDelete():
+def updateanddelete():
     """
         ---
         post:
@@ -596,8 +596,8 @@ def updatequesasdependent():
                             db.session.add(auditins)
                             db.session.commit()
                             # end region
-                    return make_response(jsonify({"msg": f"Question marked as dependent or non-dependent "
-                                                         f"successfully."})), 200
+                    return make_response(jsonify({"msg": "Question marked as dependent or non-dependent "
+                                                         "successfully."})), 200
             else:
                 return make_response(jsonify({"msg": resp})), 401
         else:

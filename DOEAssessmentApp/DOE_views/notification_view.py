@@ -1,4 +1,4 @@
-from flask import *
+from flask import Blueprint, session, request, jsonify, make_response
 from DOEAssessmentApp import db
 from DOEAssessmentApp.DOE_models.notification_model import Notification
 from DOEAssessmentApp.DOE_models.notification_received_model import NotificationReceived
@@ -78,10 +78,10 @@ def viewnotification():
                         db.session.add(auditins)
                         db.session.commit()
                         # end region
-                        return make_response(jsonify({"msg": f"Notification data successfully inserted.",
+                        return make_response(jsonify({"msg": "Notification data successfully inserted.",
                                                       "data": results[0]})), 201
                     else:
-                        return make_response(jsonify({"msg": f"Notification data already exists."})), 400
+                        return make_response(jsonify({"msg": "Notification data already exists."})), 400
             else:
                 return make_response(jsonify({"msg": resp})), 401
         else:
@@ -167,8 +167,8 @@ def updelnotification():
                         db.session.add(auditins)
                         db.session.commit()
                         # end region
-                        return make_response(jsonify({"msg": f"NOTIFICATION with Features "
-                                                             f"successfully updated."})), 200
+                        return make_response(jsonify({"msg": "NOTIFICATION with Features "
+                                                             "successfully updated."})), 200
                     elif request.method == 'DELETE':
                         db.session.delete(data.first())
                         db.session.commit()
@@ -235,7 +235,7 @@ def fetchnotification():
                                               {'createdby': d.createdby},
                                               {'modifiedby': d.modifiedby})
                         results.append(json_data)
-                    return make_response(jsonify({"msg": f"Notifications are seen", "data": results})), 200
+                    return make_response(jsonify({"msg": "Notifications are seen", "data": results})), 200
 
             else:
                 return make_response(jsonify({"msg": resp})), 401

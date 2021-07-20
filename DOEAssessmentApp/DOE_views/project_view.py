@@ -2,7 +2,6 @@ import os
 import base64
 import xlrd
 from flask import request, make_response, session, Blueprint, jsonify
-from flask import *
 from DOEAssessmentApp import app, db
 from DOEAssessmentApp.DOE_models.project_model import Project
 from DOEAssessmentApp.DOE_models.area_model import Area

@@ -1,4 +1,4 @@
-from flask import *
+from flask import Blueprint, session, request, jsonify, make_response
 from DOEAssessmentApp import app, db
 from DOEAssessmentApp.DOE_models.functionality_model import Functionality
 from DOEAssessmentApp.DOE_models.area_model import Area
@@ -22,7 +22,7 @@ colsquestion = ['id', 'name', 'answer_type', 'answers', 'maxscore', 'subfunc_id'
 
 
 @functionality_view.route('/api/functionality', methods=['GET', 'POST'])
-def getAndPost():
+def getandpost():
     """
         ---
         get:
@@ -128,8 +128,8 @@ def getAndPost():
                         # end region
 
                     existing_functionality = Functionality.query.filter(Functionality.name == func_name,
-                                                                        Functionality.area_id ==
-                                                                        func_area_id).one_or_none()
+                                                                        Functionality.area_id == func_area_id).\
+                        one_or_none()
                     if existing_functionality is None:
                         funcins = Functionality(func_name, func_desc, func_retake_assess, func_area_id, func_pro_id,
                                                 session['empid'], priority)
@@ -176,7 +176,7 @@ def getAndPost():
 
 
 @functionality_view.route('/api/updelfunctionality/', methods=['POST', 'PUT', 'DELETE'])
-def updateAndDelete():
+def updateanddelete():
     """
         ---
         post:

@@ -21,3 +21,4 @@ marshmallow~=3.9.1
 Werkzeug~=1.0.1
 Flask-SocketIO==5.0.1
 publicip
+gunicorn
