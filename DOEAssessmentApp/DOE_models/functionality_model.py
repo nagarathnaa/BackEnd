@@ -7,6 +7,7 @@ class Functionality(db.Model):
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(), nullable=False)
     priority = db.Column(db.Integer)
+    recommendation = db.Column(db.String())
     retake_assessment_days = db.Column(db.Integer)
     area_id = db.Column(db.Integer, nullable=False)
     proj_id = db.Column(db.Integer, nullable=False)
