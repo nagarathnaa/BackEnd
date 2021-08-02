@@ -362,6 +362,7 @@ def achievedpercentagebyfunctionality():
     """
     try:
         results = []
+        recommendation = None
         assessmentcompletionforfunc = 0
         achievedpercentageforfunc = 0
         countofnaques = 0
@@ -388,6 +389,8 @@ def achievedpercentagebyfunctionality():
                         json_data = mergedict({'id': d.id},
                                               {'name': d.name},
                                               {'description': d.description},
+                                              {'priority': d.priority},
+                                              {'recommendation': d.recommendation},
                                               {'retake_assessment_days': d.retake_assessment_days},
                                               {'area_id': d.area_id},
                                               {'proj_id': d.proj_id},
@@ -452,7 +455,50 @@ def achievedpercentagebyfunctionality():
                             if prevachievedpercentage != achievedpercentage:
                                 functionality_data.first().prevachievedpercentage = prevachievedpercentage
                             functionality_data.first().achievedpercentage = achievedpercentage
+                            if functionality_data.first().priority == 1:
+                                if (achievedpercentage >= 81) and (achievedpercentage <= 100):
+                                    recommendation = "Good !"
+                                else:
+                                    recommendation = "Needs improvement ! Maturity should be more than 80%. Follow" \
+                                                     " the general recommendations to improve !!"
+                            elif functionality_data.first().priority == 2:
+                                if (achievedpercentage >= 61) and (achievedpercentage <= 80):
+                                    recommendation = "Good ! Follow" \
+                                                     " the general recommendations to improve further !!"
+                                if achievedpercentage >= 81:
+                                    recommendation = "Excellent !"
+                                else:
+                                    recommendation = "Needs improvement ! Maturity should be more than 60%. Follow" \
+                                                     " the general recommendations to improve !!"
+                            elif functionality_data.first().priority == 3:
+                                if (achievedpercentage >= 41) and (achievedpercentage <= 60):
+                                    recommendation = "Good ! Follow" \
+                                                     " the general recommendations to improve further !!"
+                                if achievedpercentage >= 61:
+                                    recommendation = "Excellent !"
+                                else:
+                                    recommendation = "Needs improvement ! Maturity should be more than 40%. Follow" \
+                                                     " the general recommendations to improve !!"
+                            elif functionality_data.first().priority == 4:
+                                if (achievedpercentage >= 21) and (achievedpercentage <= 40):
+                                    recommendation = "Good ! Follow" \
+                                                     " the general recommendations to improve further !!"
+                                if achievedpercentage >= 41:
+                                    recommendation = "Excellent !"
+                                else:
+                                    recommendation = "Needs improvement ! Maturity should be more than 20%. Follow" \
+                                                     " the general recommendations to improve !!"
+                            elif functionality_data.first().priority == 5:
+                                if (achievedpercentage >= 1) and (achievedpercentage <= 20):
+                                    recommendation = "Good ! Follow" \
+                                                     " the general recommendations to improve further !!"
+                                if achievedpercentage >= 21:
+                                    recommendation = "Excellent !"
+                                else:
+                                    recommendation = "Needs improvement ! Maturity should be more than zero. Follow" \
+                                                     " the general recommendations to improve !!"
                             functionality_data.first().achievedlevel = achievedlevel
+                            functionality_data.first().recommendation = recommendation
                             functionality_data.first().modifiedby = None
                             db.session.add(functionality_data.first())
                             db.session.commit()
@@ -466,6 +512,8 @@ def achievedpercentagebyfunctionality():
                             json_data = mergedict({'id': d.id},
                                                   {'name': d.name},
                                                   {'description': d.description},
+                                                  {'priority': d.priority},
+                                                  {'recommendation': d.recommendation},
                                                   {'retake_assessment_days': d.retake_assessment_days},
                                                   {'area_id': d.area_id},
                                                   {'proj_id': d.proj_id},
@@ -499,7 +547,8 @@ def achievedpercentagebyfunctionality():
                                                       "achievedlevel": d.achievedlevel,
                                                       "prevassessmentcompletion": str(d.prevassessmentcompletion),
                                                       "prevachievedpercentage": str(
-                                                          d.prevachievedpercentage)})), 200
+                                                          d.prevachievedpercentage),
+                                                      "recommendation": recommendation})), 200
                     # end region
                     else:
                         subfunctionality_data = Subfunctionality.query.filter(Subfunctionality.proj_id == projid,
@@ -548,7 +597,50 @@ def achievedpercentagebyfunctionality():
                                 if prevachievedpercentage != achievedpercentage:
                                     functionality_data.first().prevachievedpercentage = prevachievedpercentage
                                 functionality_data.first().achievedpercentage = achievedpercentage
+                                if functionality_data.first().priority == 1:
+                                    if (achievedpercentage >= 81) and (achievedpercentage <= 100):
+                                        recommendation = "Good !"
+                                    else:
+                                        recommendation = "Needs improvement ! Maturity should be more than 80%. " \
+                                                         "Follow the general recommendations to improve !!"
+                                elif functionality_data.first().priority == 2:
+                                    if (achievedpercentage >= 61) and (achievedpercentage <= 80):
+                                        recommendation = "Good ! Follow" \
+                                                         " the general recommendations to improve further !!"
+                                    if achievedpercentage >= 81:
+                                        recommendation = "Excellent !"
+                                    else:
+                                        recommendation = "Needs improvement ! Maturity should be more than 60%. " \
+                                                         "Follow the general recommendations to improve !!"
+                                elif functionality_data.first().priority == 3:
+                                    if (achievedpercentage >= 41) and (achievedpercentage <= 60):
+                                        recommendation = "Good ! Follow" \
+                                                         " the general recommendations to improve further !!"
+                                    if achievedpercentage >= 61:
+                                        recommendation = "Excellent !"
+                                    else:
+                                        recommendation = "Needs improvement ! Maturity should be more than 40%. " \
+                                                         "Follow the general recommendations to improve !!"
+                                elif functionality_data.first().priority == 4:
+                                    if (achievedpercentage >= 21) and (achievedpercentage <= 40):
+                                        recommendation = "Good ! Follow" \
+                                                         " the general recommendations to improve further !!"
+                                    if achievedpercentage >= 41:
+                                        recommendation = "Excellent !"
+                                    else:
+                                        recommendation = "Needs improvement ! Maturity should be more than 20%. " \
+                                                         "Follow the general recommendations to improve !!"
+                                elif functionality_data.first().priority == 5:
+                                    if (achievedpercentage >= 1) and (achievedpercentage <= 20):
+                                        recommendation = "Good ! Follow" \
+                                                         " the general recommendations to improve further !!"
+                                    if achievedpercentage >= 21:
+                                        recommendation = "Excellent !"
+                                    else:
+                                        recommendation = "Needs improvement ! Maturity should be more than zero. " \
+                                                         "Follow the general recommendations to improve !!"
                                 functionality_data.first().achievedlevel = achievedlevel
+                                functionality_data.first().recommendation = recommendation
                                 functionality_data.first().modifiedby = None
                                 db.session.add(functionality_data.first())
                                 db.session.commit()
@@ -562,6 +654,8 @@ def achievedpercentagebyfunctionality():
                                 json_data = mergedict({'id': d.id},
                                                       {'name': d.name},
                                                       {'description': d.description},
+                                                      {'priority': d.priority},
+                                                      {'recommendation': d.recommendation},
                                                       {'retake_assessment_days': d.retake_assessment_days},
                                                       {'area_id': d.area_id},
                                                       {'proj_id': d.proj_id},
@@ -595,7 +689,8 @@ def achievedpercentagebyfunctionality():
                                                           "achievedlevel": d.achievedlevel,
                                                           "prevassessmentcompletion": str(d.prevassessmentcompletion),
                                                           "prevachievedpercentage": str(
-                                                              d.prevachievedpercentage)})), 200
+                                                              d.prevachievedpercentage),
+                                                          "recommendation": recommendation})), 200
                         else:
                             return make_response(jsonify({"msg": "No Sub-functionality data found!!"})), 404
             else:
