@@ -53,7 +53,8 @@ COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*
 
-
+RUN apt install postgresql-client-common -y && \
+    apt-get install postgresql-client -y
 # copy project
 COPY . $APP_HOME
 
@@ -63,5 +64,6 @@ RUN chown -R doe:doe $APP_HOME
 # change to the doe user
 USER doe
 
-CMD ["gunicorn", "--bind=0.0.0.0:5000", "wsgi:app", "--workers=3", "--threads=3", "--timeout=900"]
-
+RUN chmod +x ./run.sh
+RUN sed -i -e 's/\r$//' run.sh
+ENTRYPOINT ["./run.sh"]
