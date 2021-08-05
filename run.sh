@@ -13,7 +13,7 @@ else
     while [ $conn -ne 0 ]
     do
 	    echo $conn
-	    pg_isready -d dev_ops_app -h doe-postgrs -p 5432 -U postgres
+	    pg_isready -d dev_ops_app -h doe-postgres -p 5432 -U postgres
 	    conn=$?
 	    echo $conn
     done
