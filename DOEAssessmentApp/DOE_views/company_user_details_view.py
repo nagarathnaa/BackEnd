@@ -1,6 +1,7 @@
 import publicip
 from flask import *
 from DOEAssessmentApp import app, db, COOKIE_TIME_OUT
+from DOEAssessmentApp.DOE_models.company_details_model import Companydetails
 from DOEAssessmentApp.DOE_models.company_user_details_model import Companyuserdetails, BlacklistToken
 from DOEAssessmentApp.DOE_models.email_configuration_model import Emailconfiguration
 from DOEAssessmentApp.DOE_models.audittrail_model import Audittrail
@@ -35,6 +36,7 @@ def login():
               - login
     """
     try:
+        iscompanyprofilepresent = True
         if request.method == "POST":
             res = request.get_json(force=True)
             if 'Email' in request.cookies:
@@ -46,10 +48,14 @@ def login():
                         token = compuserdet.encode_auth_token(res['Email'])
                         # session.permanent = True
                         session['empid'] = compuserdet.empid
+                        data = Companydetails.query.filter_by(id=compuserdet.companyid)
+                        if data.first() is None:
+                            iscompanyprofilepresent = False
                         resp = make_response(jsonify({'token': token.decode(), 'type': compuserdet.emprole,
                                                       'emp_id': compuserdet.empid,
                                                       'companyid': compuserdet.companyid,
-                                                      'emp_name': compuserdet.empname}))
+                                                      'emp_name': compuserdet.empname,
+                                                      'iscompanyprofilepresent': iscompanyprofilepresent}))
                         return resp, 200
                 else:
                     return make_response(jsonify({"message": "Incorrect credentials !!"})), 401
@@ -60,13 +66,17 @@ def login():
                         token = compuserdet.encode_auth_token(res['Email'])
                         # session.permanent = True
                         session['empid'] = compuserdet.empid
+                        data = Companydetails.query.filter_by(id=compuserdet.companyid)
+                        if data.first() is None:
+                            iscompanyprofilepresent = False
                         if 'rememberme' in res:
                             rememberme = res['rememberme']
                             if rememberme is True:
                                 resp = make_response(jsonify({'token': token.decode(), 'type': compuserdet.emprole,
-                                                       'emp_id': compuserdet.empid,
-                                                       'companyid': compuserdet.companyid,
-                                                       'emp_name': compuserdet.empname}))
+                                                              'emp_id': compuserdet.empid,
+                                                              'companyid': compuserdet.companyid,
+                                                              'emp_name': compuserdet.empname,
+                                                              'iscompanyprofilepresent': iscompanyprofilepresent}))
                                 resp.set_cookie('Email', res['Email'], max_age=COOKIE_TIME_OUT)
                                 resp.set_cookie('Password', res['Password'], max_age=COOKIE_TIME_OUT)
                                 resp.set_cookie('Remember', 'checked', max_age=COOKIE_TIME_OUT)
@@ -76,13 +86,15 @@ def login():
                                 return make_response(jsonify({'token': token.decode(), 'type': compuserdet.emprole,
                                                               'emp_id': compuserdet.empid,
                                                               'companyid': compuserdet.companyid,
-                                                              'emp_name': compuserdet.empname})), 200
+                                                              'emp_name': compuserdet.empname,
+                                                              'iscompanyprofilepresent': iscompanyprofilepresent})), 200
                         else:
                             session.permanent = True
                             return make_response(jsonify({'token': token.decode(), 'type': compuserdet.emprole,
-                                                              'emp_id': compuserdet.empid,
-                                                              'companyid': compuserdet.companyid,
-                                                              'emp_name': compuserdet.empname})), 200
+                                                          'emp_id': compuserdet.empid,
+                                                          'companyid': compuserdet.companyid,
+                                                          'emp_name': compuserdet.empname,
+                                                          'iscompanyprofilepresent': iscompanyprofilepresent})), 200
                     else:
                         return make_response(jsonify({"message": "Incorrect credentials !!"})), 401
                 else:
