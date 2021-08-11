@@ -6,7 +6,6 @@ class Area(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(180), nullable=False)
     description = db.Column(db.String(), nullable=False)
-    priority = db.Column(db.Integer)
     projectid = db.Column(db.Integer, nullable=False)
     assessmentcompletion = db.Column(db.Numeric())
     achievedpercentage = db.Column(db.Numeric())
@@ -18,12 +17,11 @@ class Area(db.Model):
     createdby = db.Column(db.String(20))
     modifiedby = db.Column(db.String(20))
 
-    def __init__(self, name, description, projectid, createdby, priority):
+    def __init__(self, name, description, projectid, createdby):
         self.name = name
         self.description = description
         self.projectid = projectid
         self.createdby = createdby
-        self.priority = priority
 
     def __repr__(self):
         return '<Area %r>' % self.name
