@@ -22,7 +22,8 @@ else
     PGPASSWORD=D3v0p5En@bleR psql -h doe-postgres -U postgres -d dev_ops_app -f rbacBackup
     PGPASSWORD=D3v0p5En@bleR psql -h doe-postgres -U postgres -d dev_ops_app -f RoleBackup 
     PGPASSWORD=D3v0p5En@bleR psql -h doe-postgres -U postgres -d dev_ops_app -f notificationBackup 
-    python3 create_user_admin.py 
+    python3 create_user_admin_to_login_into_DOE.py
+
 fi   
 
 gunicorn --bind=0.0.0.0:5000 wsgi:app --workers=3 --threads=3 --timeout=900
