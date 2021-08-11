@@ -14,4 +14,3 @@ try:
         print("User admin already exists !!", flush=True)
 except Exception as e:
     print(e)
-
