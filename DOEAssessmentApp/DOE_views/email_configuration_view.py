@@ -165,7 +165,7 @@ def updelemailconfig():
                 econfigdatabefore = result[0]
                 result.clear()
                 if data.first() is None:
-                    return make_response(jsonify({"message": "Incorrect company"})), 404
+                    return make_response(jsonify({"message": "No email configuration details found !!"})), 404
                 else:
                     if request.method == 'POST':
                         result = [{col: getattr(d, col) for col in colsemailconf} for d in data]
