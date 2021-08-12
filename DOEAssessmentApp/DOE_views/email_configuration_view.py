@@ -161,12 +161,12 @@ def updelemailconfig():
                 res = request.get_json(force=True)
                 companyid = res['companyid']
                 data = Emailconfiguration.query.filter_by(companyid=companyid)
-                result = [{col: getattr(d, col) for col in colsemailconf} for d in data]
-                econfigdatabefore = result[0]
-                result.clear()
                 if data.first() is None:
                     return make_response(jsonify({"message": "No email configuration details found !!"})), 404
                 else:
+                    result = [{col: getattr(d, col) for col in colsemailconf} for d in data]
+                    econfigdatabefore = result[0]
+                    result.clear()
                     if request.method == 'POST':
                         result = [{col: getattr(d, col) for col in colsemailconf} for d in data]
                         return make_response(jsonify({"data": result[0]})), 200

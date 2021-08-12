@@ -1,5 +1,5 @@
 import publicip
-from flask import Blueprint, session, jsonify, request, make_response
+from flask import *
 from DOEAssessmentApp import app, db, COOKIE_TIME_OUT
 from DOEAssessmentApp.DOE_models.company_user_details_model import Companyuserdetails, BlacklistToken
 from DOEAssessmentApp.DOE_models.email_configuration_model import Emailconfiguration
@@ -64,9 +64,9 @@ def login():
                             rememberme = res['rememberme']
                             if rememberme is True:
                                 resp = make_response(jsonify({'token': token.decode(), 'type': compuserdet.emprole,
-                                                              'emp_id': compuserdet.empid,
-                                                              'companyid': compuserdet.companyid,
-                                                              'emp_name': compuserdet.empname}))
+                                                       'emp_id': compuserdet.empid,
+                                                       'companyid': compuserdet.companyid,
+                                                       'emp_name': compuserdet.empname}))
                                 resp.set_cookie('Email', res['Email'], max_age=COOKIE_TIME_OUT)
                                 resp.set_cookie('Password', res['Password'], max_age=COOKIE_TIME_OUT)
                                 resp.set_cookie('Remember', 'checked', max_age=COOKIE_TIME_OUT)
@@ -80,9 +80,9 @@ def login():
                         else:
                             session.permanent = True
                             return make_response(jsonify({'token': token.decode(), 'type': compuserdet.emprole,
-                                                          'emp_id': compuserdet.empid,
-                                                          'companyid': compuserdet.companyid,
-                                                          'emp_name': compuserdet.empname})), 200
+                                                              'emp_id': compuserdet.empid,
+                                                              'companyid': compuserdet.companyid,
+                                                              'emp_name': compuserdet.empname})), 200
                     else:
                         return make_response(jsonify({"message": "Incorrect credentials !!"})), 401
                 else:
@@ -199,7 +199,7 @@ def forgotpassword():
                             event_name="FORGOTPASSWORD").first()
                         mail_subject = notification_data.mail_subject
                         pubip = publicip.get()
-                        url = "http://" + pubip + "/reset-password?email=" + str(res['Email'])
+                        url = "http://"+pubip+"/reset-password?email="+str(res['Email'])
                         mail_body = str(notification_data.mail_body).format(empname=empname, url=url)
                         mailout = trigger_mail(mailfrom, res['Email'], host, epwd, mail_subject, empname, mail_body)
                         print("======", mailout)
