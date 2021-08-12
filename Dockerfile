@@ -18,7 +18,7 @@ RUN apt-get update -y && \
 RUN pip install --upgrade pip
 RUN pip install flake8
 COPY . /usr/src/app/
-RUN flake8 --ignore=E501,F401 --exclude=DOEAssessmentApp/DOE_views/project_view.py .
+RUN flake8 --ignore=E501,F401 --exclude=DOEAssessmentApp/DOE_views/project_view.py --exclude=DOEAssessmentApp/DOE_views/company_user_details_view.py.
 
 # install python dependencies
 COPY ./requirements.txt .
