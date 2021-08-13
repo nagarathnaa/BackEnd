@@ -53,10 +53,11 @@ def companydetail():
     """
     try:
         if request.method == "GET":
-            data = Companydetails.query.one_or_none()
-            if data is not None:
-                result = [{col: getattr(d, col) for col in colscompanydetails} for d in data]
-                return make_response(jsonify({"data": result[0]})), 200
+            data = Companydetails.query.all()
+            for d in data:
+                if d is not None:
+                    result = [{col: getattr(d, col) for col in colscompanydetails} for d in data]
+                    return make_response(jsonify({"data": result[0]})), 200
         elif request.method == "POST":
             res = request.get_json(force=True)
             cname = res['CompanyName']

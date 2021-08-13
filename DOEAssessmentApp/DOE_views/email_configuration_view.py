@@ -88,16 +88,16 @@ def emailconfigs():
                         db.session.add(auditins)
                         db.session.commit()
                         # end region
-                        return make_response(jsonify({"message": "Email Configuration successfully inserted"
-                                                                 " for your company",
+                        return make_response(jsonify({"msg": "Email Configuration successfully inserted "
+                                                             "for your company",
                                                       "data": result[0]})), 201
                     else:
-                        return make_response(jsonify({"message": "Email Configuration already exists for"
-                                                                 " your company"})), 400
+                        return make_response(jsonify({"msg": "Email Configuration already exists for "
+                                                             "your company"})), 400
             else:
-                return make_response(jsonify({"message": resp})), 401
+                return make_response(jsonify({"msg": resp})), 401
         else:
-            return make_response(jsonify({"message": "Provide a valid auth token."})), 401
+            return make_response(jsonify({"msg": "Provide a valid auth token."})), 401
     except Exception as e:
         return make_response(jsonify({"msg": str(e)})), 500
 
@@ -161,12 +161,12 @@ def updelemailconfig():
                 res = request.get_json(force=True)
                 companyid = res['companyid']
                 data = Emailconfiguration.query.filter_by(companyid=companyid)
-                result = [{col: getattr(d, col) for col in colsemailconf} for d in data]
-                econfigdatabefore = result[0]
-                result.clear()
                 if data.first() is None:
-                    return make_response(jsonify({"message": "No email configuration details found !!"})), 404
+                    return make_response(jsonify({"msg": "No email configuration details found !!"})), 404
                 else:
+                    result = [{col: getattr(d, col) for col in colsemailconf} for d in data]
+                    econfigdatabefore = result[0]
+                    result.clear()
                     if request.method == 'POST':
                         result = [{col: getattr(d, col) for col in colsemailconf} for d in data]
                         return make_response(jsonify({"data": result[0]})), 200
@@ -191,12 +191,12 @@ def updelemailconfig():
                         db.session.add(auditins)
                         db.session.commit()
                         # end region
-                        return make_response(jsonify({"message": "Email Configuration successfully updated"
-                                                                 " for your company",
+                        return make_response(jsonify({"msg": "Email Configuration successfully updated "
+                                                             "for your company",
                                                       "data": result[0]})), 200
             else:
-                return make_response(jsonify({"message": resp})), 401
+                return make_response(jsonify({"msg": resp})), 401
         else:
-            return make_response(jsonify({"message": "Provide a valid auth token."})), 401
+            return make_response(jsonify({"msg": "Provide a valid auth token."})), 401
     except Exception as e:
         return make_response(jsonify({"msg": str(e)})), 500
