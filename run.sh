@@ -9,14 +9,14 @@ then
 else
     rm -rf migrations
     #testing database connection
-    #conn=1
-    #while [ $conn -ne 0 ]
-    #do
-	    #echo $conn
-	    #pg_isready -d dev_ops_app -h doe-postgres -p 5432 -U postgres
-	    #conn=$?
-	    #echo $conn
-    #done
+    conn=1
+    while [ $conn -ne 0 ]
+    do
+	    echo $conn
+	    pg_isready -d dev_ops_app -h doe-postgres -p 5432 -U postgres
+	    conn=$?
+	    echo $conn
+    done
 
     python3 manage.py db init; python3 manage.py db migrate; python3 manage.py db upgrade 
     PGPASSWORD=D3v0p5En@bleR psql -h doe-postgres -U postgres -d dev_ops_app -f rbacBackup
