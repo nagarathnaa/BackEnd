@@ -58,7 +58,7 @@ def login():
                                                       'iscompanyprofilepresent': iscompanyprofilepresent}))
                         return resp, 200
                 else:
-                    return make_response(jsonify({"message": "Incorrect credentials !!"})), 401
+                    return make_response(jsonify({"message": "Incorrect credentials 1 !!"})), 401
             elif res and 'Email' in res and 'Password' in res:
                 compuserdet = Companyuserdetails.query.filter_by(empemail=res['Email']).first()
                 if compuserdet:
@@ -96,7 +96,7 @@ def login():
                                                           'emp_name': compuserdet.empname,
                                                           'iscompanyprofilepresent': iscompanyprofilepresent})), 200
                     else:
-                        return make_response(jsonify({"message": "Incorrect credentials !!"})), 401
+                        return make_response(jsonify({"message": "Incorrect credentials 2!!"})), 401
                 else:
                     return make_response(jsonify({"message": "User does not exist !!"})), 404
             else:
