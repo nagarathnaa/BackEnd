@@ -58,11 +58,8 @@ RUN apt install postgresql-client-common -y && \
 # copy project
 COPY . $APP_HOME
 
-RUN mkdir $APP_HOME/migrations
 # chown all the files to the doe user
 RUN chown -R doe:doe $APP_HOME
-
-RUN chown -R doe:doe $APP_HOME/migrations
 
 # change to the doe user
 USER doe
