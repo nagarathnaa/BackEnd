@@ -16,6 +16,9 @@ elif sys.platform == 'win32':
 
 elif sys.platform == 'darwin':
     db_settings_map = CONFS.get_map('dbformac')
+else:
+    db_settings_map = CONFS.get_map('default')
 
 email_settings_map = CONFS.get_map('emailtriggercredentials')
-dev_configs_from_file = [db_settings_map, email_settings_map]
+licensing_limitations_map = CONFS.get_map('licensinglimitations')
+dev_configs_from_file = [db_settings_map, email_settings_map, licensing_limitations_map]

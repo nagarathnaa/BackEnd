@@ -104,154 +104,608 @@ def getaddproject():
                         results.append(json_data)
                     return make_response(jsonify({"data": results})), 200
                 elif request.method == "POST":
-                    res = request.get_json(force=True)
-                    if 'excelfordefaultquestions' in res:
-                        excelfordefaultquestions = res['excelfordefaultquestions']
-                    else:
-                        excelfordefaultquestions = None
-                    projname = res['name']
-                    projdesc = res['description']
-                    comp_id = res['companyid']
-                    levels = res['levels']
-                    if 'needforreview' in res:
-                        nfr = res['needforreview']
-                    else:
-                        nfr = 1
-                    existing_project = Project.query.filter(Project.name == projname,
-                                                            Project.companyid == comp_id).one_or_none()
-                    if existing_project is None:
-                        projins = Project(projname, projdesc, levels, comp_id, nfr, session['empid'])
-                        db.session.add(projins)
-                        db.session.commit()
-                        session["projid"] = projins.id
-                        data = Project.query.filter_by(id=projins.id)
-                        for d in data:
-                            json_data = mergedict({'id': d.id},
-                                                  {'name': d.name},
-                                                  {'description': d.description},
-                                                  {'levels': d.levels},
-                                                  {'companyid': d.companyid},
-                                                  {'achievedlevel': d.achievedlevel},
-                                                  {'needforreview': d.needforreview},
-                                                  {'assessmentcompletion': str(d.assessmentcompletion)},
-                                                  {'achievedpercentage': str(d.achievedpercentage)},
-                                                  {'creationdatetime': d.creationdatetime},
-                                                  {'prevassessmentcompletion': str(d.prevassessmentcompletion)},
-                                                  {'prevachievedpercentage': str(d.prevachievedpercentage)},
-                                                  {'updationdatetime': d.updationdatetime},
-                                                  {'createdby': d.createdby},
-                                                  {'modifiedby': d.modifiedby})
-                            results.append(json_data)
-                        newaddedproject = results[0]
-                        # region call audit trail method
-                        auditins = Audittrail("PROJECT", "ADD", None, str(results[0]), session['empid'])
-                        db.session.add(auditins)
-                        db.session.commit()
-                        # end region
-                        if excelfordefaultquestions is not None:
-                            wb = xlrd.open_workbook('static/' + excelfordefaultquestions + '.xlsx')
-                            sh = wb.sheet_by_name('Sheet2')
-                            for i in range(1, sh.nrows):
-                                existing_area = Area.query.filter(Area.name == sh.cell_value(i, 0),
-                                                                  Area.projectid == projins.id).one_or_none()
-                                if existing_area is None:
-                                    areains = Area(sh.cell_value(i, 0), sh.cell_value(i, 1), projins.id,
-                                                   session['empid'])
-                                    db.session.add(areains)
-                                    db.session.commit()
-                                    data = Area.query.filter_by(id=areains.id)
-                                    for d in data:
-                                        json_data = mergedict({'id': d.id},
-                                                              {'name': d.name},
-                                                              {'description': d.description},
-                                                              {'projectid': d.projectid},
-                                                              {'assessmentcompletion': str(d.assessmentcompletion)},
-                                                              {'achievedpercentage': str(d.achievedpercentage)},
-                                                              {'achievedlevel': d.achievedlevel},
-                                                              {'creationdatetime': d.creationdatetime},
-                                                              {'prevassessmentcompletion': str(
-                                                                  d.prevassessmentcompletion)},
-                                                              {'prevachievedpercentage': str(d.prevachievedpercentage)},
-                                                              {'updationdatetime': d.updationdatetime},
-                                                              {'createdby': d.createdby},
-                                                              {'modifiedby': d.modifiedby})
-                                        results.append(json_data)
-                                    # region call audit trail method
-                                    auditins = Audittrail("AREA", "ADD", None, str(results[0]),
-                                                          session['empid'])
-                                    db.session.add(auditins)
-                                    db.session.commit()
-                                    # end region
-                                findareadata = Area.query.filter_by(name=sh.cell_value(i, 0),
-                                                                    projectid=projins.id).first()
-                                existing_functionality = Functionality.query.filter(
-                                    Functionality.name == sh.cell_value(i, 2),
-                                    Functionality.area_id ==
-                                    findareadata.id).one_or_none()
-                                if existing_functionality is None:
-                                    funcins = Functionality(sh.cell_value(i, 2),
-                                                            sh.cell_value(i, 3),
-                                                            sh.cell_value(i, 7) if sh.cell_value(i, 5) == '' else None,
-                                                            findareadata.id, projins.id, session['empid'],
-                                                            1 if sh.cell_value(i, 4) == 'Very High' else
-                                    2 if sh.cell_value(i, 4) == 'High' else 3 if sh.cell_value(i, 4) == 'Medium' else
-                                    4 if sh.cell_value(i, 4) == 'Low' else 5 if sh.cell_value(i, 4) == 'Very Low' else
-                                                            None)
-                                    db.session.add(funcins)
-                                    db.session.commit()
-                                    data = Functionality.query.filter_by(id=funcins.id)
-                                    for d in data:
-                                        json_data = mergedict({'id': d.id},
-                                                              {'name': d.name},
-                                                              {'description': d.description},
-                                                              {'retake_assessment_days': d.retake_assessment_days},
-                                                              {'area_id': d.area_id},
-                                                              {'proj_id': d.proj_id},
-                                                              {'assessmentcompletion': str(d.assessmentcompletion)},
-                                                              {'achievedpercentage': str(d.achievedpercentage)},
-                                                              {'achievedlevel': d.achievedlevel},
-                                                              {'creationdatetime': d.creationdatetime},
-                                                              {'prevassessmentcompletion': str(
-                                                                  d.prevassessmentcompletion)},
-                                                              {'prevachievedpercentage': str(d.prevachievedpercentage)},
-                                                              {'updationdatetime': d.updationdatetime},
-                                                              {'createdby': d.createdby},
-                                                              {'modifiedby': d.modifiedby})
-                                        results.append(json_data)
-                                    # region call audit trail method
-                                    auditins = Audittrail("FUNCTIONALITY", "ADD", None, str(results[0]),
-                                                          session['empid'])
-                                    db.session.add(auditins)
-                                    db.session.commit()
-                                    # end region
-                                if sh.cell_value(i, 5) != '':
-                                    findfuncdata = Functionality.query.filter_by(
-                                        name=sh.cell_value(i, 2),
-                                        area_id=findareadata.id).first()
-                                    existing_subfunctionality = Subfunctionality.query.filter(
-                                        Subfunctionality.name ==
-                                        sh.cell_value(i, 5),
-                                        Subfunctionality.func_id ==
-                                        findfuncdata.id).one_or_none()
-                                    if existing_subfunctionality is None:
-                                        subfuncins = Subfunctionality(sh.cell_value(i, 4),
-                                                                      sh.cell_value(i, 6),
-                                                                      sh.cell_value(i, 7),
-                                                                      findfuncdata.id, findareadata.id, projins.id,
+                    count_of_project = Project.query.all().count()
+                    if count_of_project < app.config.get('NOOFPROJECTS'):
+                        res = request.get_json(force=True)
+                        if 'excelfordefaultquestions' in res:
+                            excelfordefaultquestions = res['excelfordefaultquestions']
+                        else:
+                            excelfordefaultquestions = None
+                        projname = res['name']
+                        projdesc = res['description']
+                        comp_id = res['companyid']
+                        levels = res['levels']
+                        if 'needforreview' in res:
+                            nfr = res['needforreview']
+                        else:
+                            nfr = 1
+                        existing_project = Project.query.filter(Project.name == projname,
+                                                                Project.companyid == comp_id).one_or_none()
+                        if existing_project is None:
+                            projins = Project(projname, projdesc, levels, comp_id, nfr, session['empid'])
+                            db.session.add(projins)
+                            db.session.commit()
+                            session["projid"] = projins.id
+                            data = Project.query.filter_by(id=projins.id)
+                            for d in data:
+                                json_data = mergedict({'id': d.id},
+                                                      {'name': d.name},
+                                                      {'description': d.description},
+                                                      {'levels': d.levels},
+                                                      {'companyid': d.companyid},
+                                                      {'achievedlevel': d.achievedlevel},
+                                                      {'needforreview': d.needforreview},
+                                                      {'assessmentcompletion': str(d.assessmentcompletion)},
+                                                      {'achievedpercentage': str(d.achievedpercentage)},
+                                                      {'creationdatetime': d.creationdatetime},
+                                                      {'prevassessmentcompletion': str(d.prevassessmentcompletion)},
+                                                      {'prevachievedpercentage': str(d.prevachievedpercentage)},
+                                                      {'updationdatetime': d.updationdatetime},
+                                                      {'createdby': d.createdby},
+                                                      {'modifiedby': d.modifiedby})
+                                results.append(json_data)
+                            newaddedproject = results[0]
+                            # region call audit trail method
+                            auditins = Audittrail("PROJECT", "ADD", None, str(results[0]), session['empid'])
+                            db.session.add(auditins)
+                            db.session.commit()
+                            # end region
+                            if excelfordefaultquestions is not None:
+                                wb = xlrd.open_workbook('static/' + excelfordefaultquestions + '.xlsx')
+                                sh = wb.sheet_by_name('Sheet2')
+                                for i in range(1, sh.nrows):
+                                    existing_area = Area.query.filter(Area.name == sh.cell_value(i, 0),
+                                                                      Area.projectid == projins.id).one_or_none()
+                                    if existing_area is None:
+                                        areains = Area(sh.cell_value(i, 0), sh.cell_value(i, 1), projins.id,
+                                                       session['empid'])
+                                        db.session.add(areains)
+                                        db.session.commit()
+                                        data = Area.query.filter_by(id=areains.id)
+                                        for d in data:
+                                            json_data = mergedict({'id': d.id},
+                                                                  {'name': d.name},
+                                                                  {'description': d.description},
+                                                                  {'projectid': d.projectid},
+                                                                  {'assessmentcompletion': str(d.assessmentcompletion)},
+                                                                  {'achievedpercentage': str(d.achievedpercentage)},
+                                                                  {'achievedlevel': d.achievedlevel},
+                                                                  {'creationdatetime': d.creationdatetime},
+                                                                  {'prevassessmentcompletion': str(
+                                                                      d.prevassessmentcompletion)},
+                                                                  {'prevachievedpercentage': str(d.prevachievedpercentage)},
+                                                                  {'updationdatetime': d.updationdatetime},
+                                                                  {'createdby': d.createdby},
+                                                                  {'modifiedby': d.modifiedby})
+                                            results.append(json_data)
+                                        # region call audit trail method
+                                        auditins = Audittrail("AREA", "ADD", None, str(results[0]),
+                                                              session['empid'])
+                                        db.session.add(auditins)
+                                        db.session.commit()
+                                        # end region
+                                    findareadata = Area.query.filter_by(name=sh.cell_value(i, 0),
+                                                                        projectid=projins.id).first()
+                                    existing_functionality = Functionality.query.filter(
+                                        Functionality.name == sh.cell_value(i, 2),
+                                        Functionality.area_id ==
+                                        findareadata.id).one_or_none()
+                                    if existing_functionality is None:
+                                        funcins = Functionality(sh.cell_value(i, 2),
+                                                                sh.cell_value(i, 3),
+                                                                sh.cell_value(i, 7) if sh.cell_value(i, 5) == '' else None,
+                                                                findareadata.id, projins.id, session['empid'],
+                                                                1 if sh.cell_value(i, 4) == 'Very High' else
+                                        2 if sh.cell_value(i, 4) == 'High' else 3 if sh.cell_value(i, 4) == 'Medium' else
+                                        4 if sh.cell_value(i, 4) == 'Low' else 5 if sh.cell_value(i, 4) == 'Very Low' else
+                                                                None)
+                                        db.session.add(funcins)
+                                        db.session.commit()
+                                        data = Functionality.query.filter_by(id=funcins.id)
+                                        for d in data:
+                                            json_data = mergedict({'id': d.id},
+                                                                  {'name': d.name},
+                                                                  {'description': d.description},
+                                                                  {'retake_assessment_days': d.retake_assessment_days},
+                                                                  {'area_id': d.area_id},
+                                                                  {'proj_id': d.proj_id},
+                                                                  {'assessmentcompletion': str(d.assessmentcompletion)},
+                                                                  {'achievedpercentage': str(d.achievedpercentage)},
+                                                                  {'achievedlevel': d.achievedlevel},
+                                                                  {'creationdatetime': d.creationdatetime},
+                                                                  {'prevassessmentcompletion': str(
+                                                                      d.prevassessmentcompletion)},
+                                                                  {'prevachievedpercentage': str(d.prevachievedpercentage)},
+                                                                  {'updationdatetime': d.updationdatetime},
+                                                                  {'createdby': d.createdby},
+                                                                  {'modifiedby': d.modifiedby})
+                                            results.append(json_data)
+                                        # region call audit trail method
+                                        auditins = Audittrail("FUNCTIONALITY", "ADD", None, str(results[0]),
+                                                              session['empid'])
+                                        db.session.add(auditins)
+                                        db.session.commit()
+                                        # end region
+                                    if sh.cell_value(i, 5) != '':
+                                        findfuncdata = Functionality.query.filter_by(
+                                            name=sh.cell_value(i, 2),
+                                            area_id=findareadata.id).first()
+                                        existing_subfunctionality = Subfunctionality.query.filter(
+                                            Subfunctionality.name ==
+                                            sh.cell_value(i, 5),
+                                            Subfunctionality.func_id ==
+                                            findfuncdata.id).one_or_none()
+                                        if existing_subfunctionality is None:
+                                            subfuncins = Subfunctionality(sh.cell_value(i, 4),
+                                                                          sh.cell_value(i, 6),
+                                                                          sh.cell_value(i, 7),
+                                                                          findfuncdata.id, findareadata.id, projins.id,
+                                                                          session['empid'])
+                                            db.session.add(subfuncins)
+                                            db.session.commit()
+                                            data = Subfunctionality.query.filter_by(id=subfuncins.id)
+                                            results = [{col: getattr(d, col) for col in cols_subfunc} for d in data]
+                                            # region call audit trail method
+                                            auditins = Audittrail("SUB-FUNCTIONALITY", "ADD", None, str(results[0]),
+                                                                  session['empid'])
+                                            db.session.add(auditins)
+                                            db.session.commit()
+                                            # end region
+                                            # add question in new sub func
+                                            combination = str(projins.id) + str(findareadata.id) + str(
+                                                findfuncdata.id) + str(subfuncins.id) + str(sh.cell_value(i, 8))
+                                            existing_question = Question.query.filter(
+                                                Question.combination == combination).one_or_none()
+                                            if existing_question is None:
+                                                maxscore = 0
+                                                answers = []
+                                                if sh.cell_value(i, 10) == 'Yes / No':
+                                                    answers = [
+                                                        {
+                                                            "option1": sh.cell_value(i, 11),
+                                                            "score": sh.cell_value(i, 12),
+                                                            "childquestionid": [
+                                                                Question.query.filter_by(combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    subfuncins.id) + child).first().id for child in
+                                                                sh.cell_value(i, 13).split(',') if Question.query.filter_by(
+                                                                    combination=str(projins.id) + str(
+                                                                        findareadata.id) + str(
+                                                                        findfuncdata.id) + str(
+                                                                        subfuncins.id) + child) is not None] if ',' in sh.
+                                                                cell_value(i, 13)
+                                                            else 0 if Question.query.filter_by(
+                                                                combination=str(projins.id) + str(findareadata.id) + str(
+                                                                    findfuncdata.id) + str(subfuncins.id) +
+                                                                            sh.cell_value(i, 13)) is None else
+                                                            Question.query.filter_by(
+                                                                combination=str(projins.id) + str(findareadata.id) + str(
+                                                                    findfuncdata.id) + str(subfuncins.id) +
+                                                                            sh.cell_value(i, 13)).first().id
+                                                            if sh.cell_value(i, 13) != ''
+                                                            else 0
+                                                        },
+                                                        {
+                                                            "option2": sh.cell_value(i, 14),
+                                                            "score": sh.cell_value(i, 15),
+                                                            "childquestionid": [
+                                                                Question.query.filter_by(combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    subfuncins.id) + child).first().id for child in
+                                                                sh.cell_value(i, 16).split(',') if Question.query.filter_by(
+                                                                    combination=str(projins.id) + str(
+                                                                        findareadata.id) + str(
+                                                                        findfuncdata.id) + str(
+                                                                        subfuncins.id) + child) is not None] if ',' in sh.
+                                                                cell_value(i, 16)
+                                                            else 0 if Question.query.filter_by(
+                                                                combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    subfuncins.id) + sh.cell_value(i, 16)) is None else
+                                                            Question.query.filter_by(combination=str(projins.id) + str(
+                                                                findareadata.id) + str(
+                                                                findfuncdata.id) + str(
+                                                                subfuncins.id) + sh.cell_value(i, 16)).first().id
+                                                            if sh.cell_value(i, 16) != ''
+                                                            else 0
+                                                        }
+                                                    ]
+                                                    maxscore = max(int(sh.cell_value(i, 12)), int(sh.cell_value(i, 15)))
+                                                elif sh.cell_value(i, 10) == 'Multi choice':
+                                                    k = 1
+                                                    for j in range(11, sh.ncols, 3):
+                                                        if sh.cell_value(i, j) != '':
+                                                            answers.append(
+                                                                {
+                                                                    "option{0}".format(k): sh.cell_value(i, j),
+                                                                    "score": sh.cell_value(i, j + 1),
+                                                                    "childquestionid": [
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                subfuncins.id) + child).first().id for
+                                                                        child in
+                                                                        sh.cell_value(i, j + 2).split(',') if
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                subfuncins.id) + child) is
+                                                                        not None] if ',' in sh.cell_value(
+                                                                        i, j + 2)
+                                                                    else 0 if Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            subfuncins.id) + sh.
+                                                                                        cell_value(i, j + 2)) is None else
+                                                                    Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            subfuncins.id) + sh.
+                                                                                        cell_value(i, j + 2)).first().id
+                                                                    if sh.cell_value(i, j + 2) != ''
+                                                                    else 0
+                                                                })
+                                                            maxscore = maxscore + int(sh.cell_value(i, j + 1))
+                                                            k = k + 1
+                                                        else:
+                                                            break
+                                                elif sh.cell_value(i, 10) == 'Single choice':
+                                                    k = 1
+                                                    scores = []
+                                                    for j in range(11, sh.ncols, 3):
+                                                        if sh.cell_value(i, j) != '':
+                                                            answers.append(
+                                                                {
+                                                                    "option{0}".format(k): sh.cell_value(i, j),
+                                                                    "score": sh.cell_value(i, j + 1),
+                                                                    "childquestionid": [
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                subfuncins.id) + child).first().id for
+                                                                        child in
+                                                                        sh.cell_value(i, j + 2).split(',') if
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                subfuncins.id) + child) is
+                                                                        not None] if ',' in sh.cell_value(
+                                                                        i, j + 2)
+                                                                    else 0 if Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            subfuncins.id) + sh.
+                                                                                        cell_value(i, j + 2)) is None else
+                                                                    Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            subfuncins.id) + sh.
+                                                                                        cell_value(i, j + 2)).first().id
+                                                                    if sh.cell_value(i, j + 2) != ''
+                                                                    else 0
+                                                                })
+                                                            scores.append(int(sh.cell_value(i, j + 1)))
+                                                            k = k + 1
+                                                        else:
+                                                            break
+                                                        maxscore = max(scores)
+                                                quesins = Question(sh.cell_value(i, 8), sh.cell_value(i, 10), answers,
+                                                                   maxscore,
+                                                                   subfuncins.id,
+                                                                   findfuncdata.id, findareadata.id, projins.id,
+                                                                   combination, sh.cell_value(i, 9), session['empid'])
+                                                db.session.add(quesins)
+                                                db.session.commit()
+                                                for a in answers:
+                                                    if a['childquestionid'] != 0:
+                                                        if isinstance(a['childquestionid'], list):
+                                                            for c in a['childquestionid']:
+                                                                data = Question.query.filter_by(id=c)
+                                                                result = [{col: getattr(d, col) for col in colsquestion} for
+                                                                          d
+                                                                          in data]
+                                                                quesdatabefore = result[0]
+                                                                result.clear()
+                                                                if data.first() is not None:
+                                                                    data.first().isdependentquestion = 1
+                                                                    data.first().modifiedby = session['empid']
+                                                                    data.first().islocked = 0
+                                                                    db.session.add(data.first())
+                                                                    db.session.commit()
+                                                                    data = Question.query.filter_by(id=c)
+                                                                    result = [{col: getattr(d, col) for col in colsquestion}
+                                                                              for
+                                                                              d in data]
+                                                                    quesdataafter = result[0]
+                                                                    result.clear()
+                                                                    # region call audit trail method
+                                                                    auditins = Audittrail("QUESTION", "UPDATE",
+                                                                                          str(quesdatabefore),
+                                                                                          str(quesdataafter),
+                                                                                          session['empid'])
+                                                                    db.session.add(auditins)
+                                                                    db.session.commit()
+                                                                    # end region
+                                                        else:
+                                                            data = Question.query.filter_by(id=a['childquestionid'])
+                                                            result = [{col: getattr(d, col) for col in colsquestion} for d
+                                                                      in data]
+                                                            quesdatabefore = result[0]
+                                                            result.clear()
+                                                            if data.first() is not None:
+                                                                data.first().isdependentquestion = 1
+                                                                data.first().modifiedby = session['empid']
+                                                                data.first().islocked = 0
+                                                                db.session.add(data.first())
+                                                                db.session.commit()
+                                                                data = Question.query.filter_by(id=a['childquestionid'])
+                                                                result = [{col: getattr(d, col) for col in colsquestion} for
+                                                                          d in data]
+                                                                quesdataafter = result[0]
+                                                                result.clear()
+                                                                # region call audit trail method
+                                                                auditins = Audittrail("QUESTION", "UPDATE",
+                                                                                      str(quesdatabefore),
+                                                                                      str(quesdataafter),
+                                                                                      session['empid'])
+                                                                db.session.add(auditins)
+                                                                db.session.commit()
+                                                                # end region
+                                                data = Question.query.filter_by(id=quesins.id)
+                                                results = [{col: getattr(d, col) for col in colsquestion} for d in data]
+                                                # region call audit trail method
+                                                auditins = Audittrail("QUESTION", "ADD", None, str(results[0]),
                                                                       session['empid'])
-                                        db.session.add(subfuncins)
-                                        db.session.commit()
-                                        data = Subfunctionality.query.filter_by(id=subfuncins.id)
-                                        results = [{col: getattr(d, col) for col in cols_subfunc} for d in data]
-                                        # region call audit trail method
-                                        auditins = Audittrail("SUB-FUNCTIONALITY", "ADD", None, str(results[0]),
-                                                              session['empid'])
-                                        db.session.add(auditins)
-                                        db.session.commit()
-                                        # end region
-                                        # add question in new sub func
+                                                db.session.add(auditins)
+                                                db.session.commit()
+                                                # end region
+                                            else:
+                                                pass
+                                        else:
+                                            # add questions in sub func which already exists
+                                            findsubfuncdata = Subfunctionality.query.filter(Subfunctionality.name ==
+                                                                                            sh.cell_value(i, 5),
+                                                                                            Subfunctionality.func_id ==
+                                                                                            findfuncdata.id).one_or_none()
+                                            combination = str(projins.id) + str(findareadata.id) + str(
+                                                findfuncdata.id) + str(findsubfuncdata.id) + str(sh.cell_value(i, 8))
+                                            existing_question = Question.query.filter(
+                                                Question.combination == combination).one_or_none()
+                                            if existing_question is None:
+                                                maxscore = 0
+                                                answers = []
+                                                if sh.cell_value(i, 10) == 'Yes / No':
+                                                    answers = [
+                                                        {
+                                                            "option1": sh.cell_value(i, 11),
+                                                            "score": sh.cell_value(i, 12),
+                                                            "childquestionid": [
+                                                                Question.query.filter_by(combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    findsubfuncdata.id) + child).first().id for child in
+                                                                sh.cell_value(i, 13).split(',') if Question.query.filter_by(
+                                                                    combination=str(projins.id) + str(
+                                                                        findareadata.id) + str(
+                                                                        findfuncdata.id) + str(
+                                                                        findsubfuncdata.id) + child) is not None] if ',' in sh.
+                                                                cell_value(i, 13)
+                                                            else 0 if Question.query.filter_by(
+                                                                combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    findsubfuncdata.id) + sh.cell_value(i, 13)) is None else
+                                                            Question.query.filter_by(combination=str(projins.id) + str(
+                                                                findareadata.id) + str(
+                                                                findfuncdata.id) + str(
+                                                                findsubfuncdata.id) + sh.cell_value(i, 13)).first().id
+                                                            if sh.cell_value(i, 13) != ''
+                                                            else 0
+                                                        },
+                                                        {
+                                                            "option2": sh.cell_value(i, 14),
+                                                            "score": sh.cell_value(i, 15),
+                                                            "childquestionid": [
+                                                                Question.query.filter_by(combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    findsubfuncdata.id) + child).first().id for child in
+                                                                sh.cell_value(i, 16).split(',') if Question.query.filter_by(
+                                                                    combination=str(projins.id) + str(
+                                                                        findareadata.id) + str(
+                                                                        findfuncdata.id) + str(
+                                                                        findsubfuncdata.id) + child) is not None] if ',' in sh.
+                                                                cell_value(i, 16)
+                                                            else 0 if Question.query.filter_by(
+                                                                combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    findsubfuncdata.id) + sh.cell_value(i, 16)) is None else
+                                                            Question.query.filter_by(combination=str(projins.id) + str(
+                                                                findareadata.id) + str(
+                                                                findfuncdata.id) + str(
+                                                                findsubfuncdata.id) + sh.cell_value(i, 16)).first().id
+                                                            if sh.cell_value(i, 16) != ''
+                                                            else 0
+                                                        }
+                                                    ]
+                                                    maxscore = max(int(sh.cell_value(i, 12)), int(sh.cell_value(i, 15)))
+                                                elif sh.cell_value(i, 10) == 'Multi choice':
+                                                    k = 1
+                                                    for j in range(11, sh.ncols, 3):
+                                                        if sh.cell_value(i, j) != '':
+                                                            answers.append(
+                                                                {
+                                                                    "option{0}".format(k): sh.cell_value(i, j),
+                                                                    "score": sh.cell_value(i, j + 1),
+                                                                    "childquestionid": [
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                findsubfuncdata.id) + child).first().id for
+                                                                        child in
+                                                                        sh.cell_value(i, j + 2).split(',') if
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                findsubfuncdata.id) + child) is
+                                                                        not None] if ',' in sh.cell_value(
+                                                                        i, j + 2)
+                                                                    else 0 if Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            findsubfuncdata.id) + sh.
+                                                                                        cell_value(i, j + 2)) is None else
+                                                                    Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            findsubfuncdata.id) + sh.
+                                                                                        cell_value(i, j + 2)).first().id
+                                                                    if sh.cell_value(i, j + 2) != ''
+                                                                    else 0
+                                                                })
+                                                            maxscore = maxscore + int(sh.cell_value(i, j + 1))
+                                                            k = k + 1
+                                                        else:
+                                                            break
+                                                elif sh.cell_value(i, 10) == 'Single choice':
+                                                    k = 1
+                                                    scores = []
+                                                    for j in range(11, sh.ncols, 3):
+                                                        if sh.cell_value(i, j) != '':
+                                                            answers.append(
+                                                                {
+                                                                    "option{0}".format(k): sh.cell_value(i, j),
+                                                                    "score": sh.cell_value(i, j + 1),
+                                                                    "childquestionid": [
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                findsubfuncdata.id) + child).first().id for
+                                                                        child in
+                                                                        sh.cell_value(i, j + 2).split(',') if
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                findsubfuncdata.id) + child) is
+                                                                        not None] if ',' in sh.cell_value(
+                                                                        i, j + 2)
+                                                                    else 0 if Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            findsubfuncdata.id) + sh.
+                                                                                        cell_value(i, j + 2)) is None else
+                                                                    Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            findsubfuncdata.id) + sh.
+                                                                                        cell_value(i, j + 2)).first().id
+                                                                    if sh.cell_value(i, j + 2) != ''
+                                                                    else 0
+                                                                })
+                                                            scores.append(int(sh.cell_value(i, j + 1)))
+                                                            k = k + 1
+                                                        else:
+                                                            break
+                                                        maxscore = max(scores)
+                                                quesins = Question(sh.cell_value(i, 8), sh.cell_value(i, 10), answers,
+                                                                   maxscore,
+                                                                   findsubfuncdata.id,
+                                                                   findfuncdata.id, findareadata.id, projins.id,
+                                                                   combination, sh.cell_value(i, 9), session['empid'])
+                                                db.session.add(quesins)
+                                                db.session.commit()
+                                                for a in answers:
+                                                    if a['childquestionid'] != 0:
+                                                        if isinstance(a['childquestionid'], list):
+                                                            for c in a['childquestionid']:
+                                                                data = Question.query.filter_by(id=c)
+                                                                result = [{col: getattr(d, col) for col in colsquestion} for
+                                                                          d
+                                                                          in data]
+                                                                quesdatabefore = result[0]
+                                                                result.clear()
+                                                                if data.first() is not None:
+                                                                    data.first().isdependentquestion = 1
+                                                                    data.first().modifiedby = session['empid']
+                                                                    data.first().islocked = 0
+                                                                    db.session.add(data.first())
+                                                                    db.session.commit()
+                                                                    data = Question.query.filter_by(id=c)
+                                                                    result = [{col: getattr(d, col) for col in colsquestion}
+                                                                              for
+                                                                              d in data]
+                                                                    quesdataafter = result[0]
+                                                                    result.clear()
+                                                                    # region call audit trail method
+                                                                    auditins = Audittrail("QUESTION", "UPDATE",
+                                                                                          str(quesdatabefore),
+                                                                                          str(quesdataafter),
+                                                                                          session['empid'])
+                                                                    db.session.add(auditins)
+                                                                    db.session.commit()
+                                                                    # end region
+                                                        else:
+                                                            data = Question.query.filter_by(id=a['childquestionid'])
+                                                            result = [{col: getattr(d, col) for col in colsquestion} for d
+                                                                      in data]
+                                                            quesdatabefore = result[0]
+                                                            result.clear()
+                                                            if data.first() is not None:
+                                                                data.first().isdependentquestion = 1
+                                                                data.first().modifiedby = session['empid']
+                                                                data.first().islocked = 0
+                                                                db.session.add(data.first())
+                                                                db.session.commit()
+                                                                data = Question.query.filter_by(id=a['childquestionid'])
+                                                                result = [{col: getattr(d, col) for col in colsquestion} for
+                                                                          d in data]
+                                                                quesdataafter = result[0]
+                                                                result.clear()
+                                                                # region call audit trail method
+                                                                auditins = Audittrail("QUESTION", "UPDATE",
+                                                                                      str(quesdatabefore),
+                                                                                      str(quesdataafter),
+                                                                                      session['empid'])
+                                                                db.session.add(auditins)
+                                                                db.session.commit()
+                                                                # end region
+                                                data = Question.query.filter_by(id=quesins.id)
+                                                results = [{col: getattr(d, col) for col in colsquestion} for d in data]
+                                                # region call audit trail method
+                                                auditins = Audittrail("QUESTION", "ADD", None, str(results[0]),
+                                                                      session['empid'])
+                                                db.session.add(auditins)
+                                                db.session.commit()
+                                                # end region
+                                            else:
+                                                pass
+                                    else:
+                                        # add questions in func when subfunc does not exists for this func
+                                        findfuncdata = Functionality.query.filter_by(
+                                            name=sh.cell_value(i, 2),
+                                            area_id=findareadata.id).first()
                                         combination = str(projins.id) + str(findareadata.id) + str(
-                                            findfuncdata.id) + str(subfuncins.id) + str(sh.cell_value(i, 8))
+                                            findfuncdata.id) + str(sh.cell_value(i, 8))
                                         existing_question = Question.query.filter(
                                             Question.combination == combination).one_or_none()
                                         if existing_question is None:
@@ -265,22 +719,19 @@ def getaddproject():
                                                         "childquestionid": [
                                                             Question.query.filter_by(combination=str(projins.id) + str(
                                                                 findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                subfuncins.id) + child).first().id for child in
+                                                                findfuncdata.id) + child).first().id for child in
                                                             sh.cell_value(i, 13).split(',') if Question.query.filter_by(
                                                                 combination=str(projins.id) + str(
                                                                     findareadata.id) + str(
-                                                                    findfuncdata.id) + str(
-                                                                    subfuncins.id) + child) is not None] if ',' in sh.
+                                                                    findfuncdata.id) + child) is not None] if ',' in sh.
                                                             cell_value(i, 13)
                                                         else 0 if Question.query.filter_by(
-                                                            combination=str(projins.id) + str(findareadata.id) + str(
-                                                                findfuncdata.id) + str(subfuncins.id) +
-                                                                        sh.cell_value(i, 13)) is None else
-                                                        Question.query.filter_by(
-                                                            combination=str(projins.id) + str(findareadata.id) + str(
-                                                                findfuncdata.id) + str(subfuncins.id) +
-                                                                        sh.cell_value(i, 13)).first().id
+                                                            combination=str(projins.id) + str(
+                                                                findareadata.id) + str(
+                                                                findfuncdata.id) + sh.cell_value(i, 13)) is None else
+                                                        Question.query.filter_by(combination=str(projins.id) + str(
+                                                            findareadata.id) + str(
+                                                            findfuncdata.id) + sh.cell_value(i, 13)).first().id
                                                         if sh.cell_value(i, 13) != ''
                                                         else 0
                                                     },
@@ -290,23 +741,19 @@ def getaddproject():
                                                         "childquestionid": [
                                                             Question.query.filter_by(combination=str(projins.id) + str(
                                                                 findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                subfuncins.id) + child).first().id for child in
+                                                                findfuncdata.id) + child).first().id for child in
                                                             sh.cell_value(i, 16).split(',') if Question.query.filter_by(
                                                                 combination=str(projins.id) + str(
                                                                     findareadata.id) + str(
-                                                                    findfuncdata.id) + str(
-                                                                    subfuncins.id) + child) is not None] if ',' in sh.
+                                                                    findfuncdata.id) + child) is not None] if ',' in sh.
                                                             cell_value(i, 16)
                                                         else 0 if Question.query.filter_by(
                                                             combination=str(projins.id) + str(
                                                                 findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                subfuncins.id) + sh.cell_value(i, 16)) is None else
+                                                                findfuncdata.id) + sh.cell_value(i, 16)) is None else
                                                         Question.query.filter_by(combination=str(projins.id) + str(
                                                             findareadata.id) + str(
-                                                            findfuncdata.id) + str(
-                                                            subfuncins.id) + sh.cell_value(i, 16)).first().id
+                                                            findfuncdata.id) + sh.cell_value(i, 16)).first().id
                                                         if sh.cell_value(i, 16) != ''
                                                         else 0
                                                     }
@@ -324,28 +771,24 @@ def getaddproject():
                                                                     Question.query.filter_by(
                                                                         combination=str(projins.id) + str(
                                                                             findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            subfuncins.id) + child).first().id for
+                                                                            findfuncdata.id) + child).first().id for
                                                                     child in
                                                                     sh.cell_value(i, j + 2).split(',') if
                                                                     Question.query.filter_by(
                                                                         combination=str(projins.id) + str(
                                                                             findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            subfuncins.id) + child) is
+                                                                            findfuncdata.id) + child) is
                                                                     not None] if ',' in sh.cell_value(
                                                                     i, j + 2)
                                                                 else 0 if Question.query.filter_by(
                                                                     combination=str(projins.id) + str(
                                                                         findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        subfuncins.id) + sh.
+                                                                        findfuncdata.id) + sh.
                                                                                     cell_value(i, j + 2)) is None else
                                                                 Question.query.filter_by(
                                                                     combination=str(projins.id) + str(
                                                                         findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        subfuncins.id) + sh.
+                                                                        findfuncdata.id) + sh.
                                                                                     cell_value(i, j + 2)).first().id
                                                                 if sh.cell_value(i, j + 2) != ''
                                                                 else 0
@@ -367,28 +810,24 @@ def getaddproject():
                                                                     Question.query.filter_by(
                                                                         combination=str(projins.id) + str(
                                                                             findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            subfuncins.id) + child).first().id for
+                                                                            findfuncdata.id) + child).first().id for
                                                                     child in
                                                                     sh.cell_value(i, j + 2).split(',') if
                                                                     Question.query.filter_by(
                                                                         combination=str(projins.id) + str(
                                                                             findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            subfuncins.id) + child) is
+                                                                            findfuncdata.id) + child) is
                                                                     not None] if ',' in sh.cell_value(
                                                                     i, j + 2)
                                                                 else 0 if Question.query.filter_by(
                                                                     combination=str(projins.id) + str(
                                                                         findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        subfuncins.id) + sh.
+                                                                        findfuncdata.id) + sh.
                                                                                     cell_value(i, j + 2)) is None else
                                                                 Question.query.filter_by(
                                                                     combination=str(projins.id) + str(
                                                                         findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        subfuncins.id) + sh.
+                                                                        findfuncdata.id) + sh.
                                                                                     cell_value(i, j + 2)).first().id
                                                                 if sh.cell_value(i, j + 2) != ''
                                                                 else 0
@@ -400,7 +839,7 @@ def getaddproject():
                                                     maxscore = max(scores)
                                             quesins = Question(sh.cell_value(i, 8), sh.cell_value(i, 10), answers,
                                                                maxscore,
-                                                               subfuncins.id,
+                                                               None,
                                                                findfuncdata.id, findareadata.id, projins.id,
                                                                combination, sh.cell_value(i, 9), session['empid'])
                                             db.session.add(quesins)
@@ -410,8 +849,7 @@ def getaddproject():
                                                     if isinstance(a['childquestionid'], list):
                                                         for c in a['childquestionid']:
                                                             data = Question.query.filter_by(id=c)
-                                                            result = [{col: getattr(d, col) for col in colsquestion} for
-                                                                      d
+                                                            result = [{col: getattr(d, col) for col in colsquestion} for d
                                                                       in data]
                                                             quesdatabefore = result[0]
                                                             result.clear()
@@ -422,8 +860,7 @@ def getaddproject():
                                                                 db.session.add(data.first())
                                                                 db.session.commit()
                                                                 data = Question.query.filter_by(id=c)
-                                                                result = [{col: getattr(d, col) for col in colsquestion}
-                                                                          for
+                                                                result = [{col: getattr(d, col) for col in colsquestion} for
                                                                           d in data]
                                                                 quesdataafter = result[0]
                                                                 result.clear()
@@ -470,175 +907,341 @@ def getaddproject():
                                             # end region
                                         else:
                                             pass
-                                    else:
-                                        # add questions in sub func which already exists
-                                        findsubfuncdata = Subfunctionality.query.filter(Subfunctionality.name ==
-                                                                                        sh.cell_value(i, 5),
-                                                                                        Subfunctionality.func_id ==
-                                                                                        findfuncdata.id).one_or_none()
-                                        combination = str(projins.id) + str(findareadata.id) + str(
-                                            findfuncdata.id) + str(findsubfuncdata.id) + str(sh.cell_value(i, 8))
-                                        existing_question = Question.query.filter(
-                                            Question.combination == combination).one_or_none()
-                                        if existing_question is None:
-                                            maxscore = 0
-                                            answers = []
-                                            if sh.cell_value(i, 10) == 'Yes / No':
-                                                answers = [
-                                                    {
-                                                        "option1": sh.cell_value(i, 11),
-                                                        "score": sh.cell_value(i, 12),
-                                                        "childquestionid": [
-                                                            Question.query.filter_by(combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                findsubfuncdata.id) + child).first().id for child in
-                                                            sh.cell_value(i, 13).split(',') if Question.query.filter_by(
-                                                                combination=str(projins.id) + str(
-                                                                    findareadata.id) + str(
-                                                                    findfuncdata.id) + str(
-                                                                    findsubfuncdata.id) + child) is not None] if ',' in sh.
-                                                            cell_value(i, 13)
-                                                        else 0 if Question.query.filter_by(
-                                                            combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                findsubfuncdata.id) + sh.cell_value(i, 13)) is None else
-                                                        Question.query.filter_by(combination=str(projins.id) + str(
-                                                            findareadata.id) + str(
-                                                            findfuncdata.id) + str(
-                                                            findsubfuncdata.id) + sh.cell_value(i, 13)).first().id
-                                                        if sh.cell_value(i, 13) != ''
-                                                        else 0
-                                                    },
-                                                    {
-                                                        "option2": sh.cell_value(i, 14),
-                                                        "score": sh.cell_value(i, 15),
-                                                        "childquestionid": [
-                                                            Question.query.filter_by(combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                findsubfuncdata.id) + child).first().id for child in
-                                                            sh.cell_value(i, 16).split(',') if Question.query.filter_by(
-                                                                combination=str(projins.id) + str(
-                                                                    findareadata.id) + str(
-                                                                    findfuncdata.id) + str(
-                                                                    findsubfuncdata.id) + child) is not None] if ',' in sh.
-                                                            cell_value(i, 16)
-                                                        else 0 if Question.query.filter_by(
-                                                            combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                findsubfuncdata.id) + sh.cell_value(i, 16)) is None else
-                                                        Question.query.filter_by(combination=str(projins.id) + str(
-                                                            findareadata.id) + str(
-                                                            findfuncdata.id) + str(
-                                                            findsubfuncdata.id) + sh.cell_value(i, 16)).first().id
-                                                        if sh.cell_value(i, 16) != ''
-                                                        else 0
-                                                    }
-                                                ]
-                                                maxscore = max(int(sh.cell_value(i, 12)), int(sh.cell_value(i, 15)))
-                                            elif sh.cell_value(i, 10) == 'Multi choice':
-                                                k = 1
-                                                for j in range(11, sh.ncols, 3):
-                                                    if sh.cell_value(i, j) != '':
-                                                        answers.append(
-                                                            {
-                                                                "option{0}".format(k): sh.cell_value(i, j),
-                                                                "score": sh.cell_value(i, j + 1),
-                                                                "childquestionid": [
-                                                                    Question.query.filter_by(
-                                                                        combination=str(projins.id) + str(
-                                                                            findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            findsubfuncdata.id) + child).first().id for
-                                                                    child in
-                                                                    sh.cell_value(i, j + 2).split(',') if
-                                                                    Question.query.filter_by(
-                                                                        combination=str(projins.id) + str(
-                                                                            findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            findsubfuncdata.id) + child) is
-                                                                    not None] if ',' in sh.cell_value(
-                                                                    i, j + 2)
-                                                                else 0 if Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        findsubfuncdata.id) + sh.
-                                                                                    cell_value(i, j + 2)) is None else
-                                                                Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        findsubfuncdata.id) + sh.
-                                                                                    cell_value(i, j + 2)).first().id
-                                                                if sh.cell_value(i, j + 2) != ''
-                                                                else 0
-                                                            })
-                                                        maxscore = maxscore + int(sh.cell_value(i, j + 1))
-                                                        k = k + 1
-                                                    else:
-                                                        break
-                                            elif sh.cell_value(i, 10) == 'Single choice':
-                                                k = 1
-                                                scores = []
-                                                for j in range(11, sh.ncols, 3):
-                                                    if sh.cell_value(i, j) != '':
-                                                        answers.append(
-                                                            {
-                                                                "option{0}".format(k): sh.cell_value(i, j),
-                                                                "score": sh.cell_value(i, j + 1),
-                                                                "childquestionid": [
-                                                                    Question.query.filter_by(
-                                                                        combination=str(projins.id) + str(
-                                                                            findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            findsubfuncdata.id) + child).first().id for
-                                                                    child in
-                                                                    sh.cell_value(i, j + 2).split(',') if
-                                                                    Question.query.filter_by(
-                                                                        combination=str(projins.id) + str(
-                                                                            findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            findsubfuncdata.id) + child) is
-                                                                    not None] if ',' in sh.cell_value(
-                                                                    i, j + 2)
-                                                                else 0 if Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        findsubfuncdata.id) + sh.
-                                                                                    cell_value(i, j + 2)) is None else
-                                                                Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        findsubfuncdata.id) + sh.
-                                                                                    cell_value(i, j + 2)).first().id
-                                                                if sh.cell_value(i, j + 2) != ''
-                                                                else 0
-                                                            })
-                                                        scores.append(int(sh.cell_value(i, j + 1)))
-                                                        k = k + 1
-                                                    else:
-                                                        break
-                                                    maxscore = max(scores)
-                                            quesins = Question(sh.cell_value(i, 8), sh.cell_value(i, 10), answers,
-                                                               maxscore,
-                                                               findsubfuncdata.id,
-                                                               findfuncdata.id, findareadata.id, projins.id,
-                                                               combination, sh.cell_value(i, 9), session['empid'])
-                                            db.session.add(quesins)
+                                return make_response(jsonify({"message": f"Project {projname} has been successfully "
+                                                                         f"added with "
+                                                                         f"default assessments.",
+                                                              "data": newaddedproject})), 201
+                            elif 'udquesfilebase64' in res and 'filename' in res:
+                                xldecoded = base64.b64decode(res['udquesfilebase64'])
+                                xlfile = open(os.path.join('static/', res['filename']), 'wb')
+                                xlfile.write(xldecoded)
+                                xlfile.close()
+                                wb = xlrd.open_workbook('static/' + res['filename'])
+                                sh = wb.sheet_by_name('Sheet2')
+                                for i in range(1, sh.nrows):
+                                    existing_area = Area.query.filter(Area.name == str(sh.cell_value(i, 0)).strip(),
+                                                                      Area.projectid == projins.id).one_or_none()
+                                    if existing_area is None:
+                                        areains = Area(str(sh.cell_value(i, 0)).strip(),
+                                                       str(sh.cell_value(i, 1)).strip(), projins.id, session['empid'])
+                                        db.session.add(areains)
+                                        db.session.commit()
+                                        data = Area.query.filter_by(id=areains.id)
+                                        for d in data:
+                                            json_data = mergedict({'id': d.id},
+                                                                  {'name': d.name},
+                                                                  {'description': d.description},
+                                                                  {'projectid': d.projectid},
+                                                                  {'assessmentcompletion': str(
+                                                                      d.assessmentcompletion)},
+                                                                  {'achievedpercentage': str(d.achievedpercentage)},
+                                                                  {'achievedlevel': d.achievedlevel},
+                                                                  {'creationdatetime': d.creationdatetime},
+                                                                  {'prevassessmentcompletion': str(
+                                                                      d.prevassessmentcompletion)},
+                                                                  {'prevachievedpercentage': str(d.prevachievedpercentage)},
+                                                                  {'updationdatetime': d.updationdatetime},
+                                                                  {'createdby': d.createdby},
+                                                                  {'modifiedby': d.modifiedby})
+                                            results.append(json_data)
+                                        # region call audit trail method
+                                        auditins = Audittrail("AREA", "ADD", None, str(results[0]),
+                                                              session['empid'])
+                                        db.session.add(auditins)
+                                        db.session.commit()
+                                        # end region
+                                    findareadata = Area.query.filter_by(name=str(sh.cell_value(i, 0)).strip(),
+                                                                        projectid=projins.id).first()
+                                    existing_functionality = Functionality.query.filter(
+                                        Functionality.name == str(sh.cell_value(i, 2)).strip(),
+                                        Functionality.area_id ==
+                                        findareadata.id).one_or_none()
+                                    if existing_functionality is None:
+                                        funcins = Functionality(str(sh.cell_value(i, 2)).strip(),
+                                                                str(sh.cell_value(i, 3)).strip(),
+                                                                sh.cell_value(i, 7)
+                                                                if str(sh.cell_value(i, 5)).strip() == '' else None,
+                                                                findareadata.id, projins.id, session['empid'],
+                                                                1 if sh.cell_value(i, 4) == 'Very High' else
+                                                                2 if sh.cell_value(i, 4) == 'High' else 3 if sh.cell_value(
+                                                                    i, 4) == 'Medium' else
+                                                                4 if sh.cell_value(i, 4) == 'Low' else
+                                                                5 if sh.cell_value(i, 4) == 'Very Low' else
+                                                                None)
+                                        db.session.add(funcins)
+                                        db.session.commit()
+                                        data = Functionality.query.filter_by(id=funcins.id)
+                                        for d in data:
+                                            json_data = mergedict({'id': d.id},
+                                                                  {'name': d.name},
+                                                                  {'description': d.description},
+                                                                  {'retake_assessment_days':
+                                                                       d.retake_assessment_days},
+                                                                  {'area_id': d.area_id},
+                                                                  {'proj_id': d.proj_id},
+                                                                  {'assessmentcompletion': str(
+                                                                      d.assessmentcompletion)},
+                                                                  {'achievedpercentage': str(d.achievedpercentage)},
+                                                                  {'achievedlevel': d.achievedlevel},
+                                                                  {'creationdatetime': d.creationdatetime},
+                                                                  {'prevassessmentcompletion': str(
+                                                                      d.prevassessmentcompletion)},
+                                                                  {'prevachievedpercentage': str(d.prevachievedpercentage)},
+                                                                  {'updationdatetime': d.updationdatetime},
+                                                                  {'createdby': d.createdby},
+                                                                  {'modifiedby': d.modifiedby})
+                                            results.append(json_data)
+                                        # region call audit trail method
+                                        auditins = Audittrail("FUNCTIONALITY", "ADD", None, str(results[0]),
+                                                              session['empid'])
+                                        db.session.add(auditins)
+                                        db.session.commit()
+                                        # end region
+                                    if sh.cell_value(i, 5) != '':
+                                        findfuncdata = Functionality.query.filter_by(
+                                            name=str(sh.cell_value(i, 2)).strip(),
+                                            area_id=findareadata.id).first()
+                                        existing_subfunctionality = Subfunctionality.query.filter(
+                                            Subfunctionality.name ==
+                                            str(sh.cell_value(i, 5)).strip(),
+                                            Subfunctionality.func_id ==
+                                            findfuncdata.id).one_or_none()
+                                        if existing_subfunctionality is None:
+                                            subfuncins = Subfunctionality(str(sh.cell_value(i, 5)).strip(),
+                                                                          str(sh.cell_value(i, 6)).strip(),
+                                                                          sh.cell_value(i, 7),
+                                                                          findfuncdata.id, findareadata.id,
+                                                                          projins.id, session['empid'])
+                                            db.session.add(subfuncins)
                                             db.session.commit()
-                                            for a in answers:
-                                                if a['childquestionid'] != 0:
-                                                    if isinstance(a['childquestionid'], list):
-                                                        for c in a['childquestionid']:
-                                                            data = Question.query.filter_by(id=c)
-                                                            result = [{col: getattr(d, col) for col in colsquestion} for
-                                                                      d
+                                            data = Subfunctionality.query.filter_by(id=subfuncins.id)
+                                            results = [{col: getattr(d, col) for col in cols_subfunc} for d in data]
+                                            # region call audit trail method
+                                            auditins = Audittrail("SUB-FUNCTIONALITY", "ADD", None, str(results[0]),
+                                                                  session['empid'])
+                                            db.session.add(auditins)
+                                            db.session.commit()
+                                            # end region
+                                            # add question in new sub func
+                                            combination = str(projins.id) + str(findareadata.id) + str(
+                                                findfuncdata.id) + str(subfuncins.id) + str(
+                                                sh.cell_value(i, 8)).strip()
+                                            existing_question = Question.query.filter(
+                                                Question.combination == combination).one_or_none()
+                                            if existing_question is None:
+                                                maxscore = 0
+                                                answers = []
+                                                if str(sh.cell_value(i, 10)).strip() == 'Yes / No':
+                                                    answers = [
+                                                        {
+                                                            "option1": str(sh.cell_value(i, 11)).strip(),
+                                                            "score": sh.cell_value(i, 12),
+                                                            "childquestionid": [
+                                                                Question.query.filter_by(combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    subfuncins.id) + child).first().id for
+                                                                child in
+                                                                str(sh.cell_value(i, 13)).strip().split(',') if
+                                                                Question.query.filter_by(
+                                                                    combination=str(projins.id) + str(
+                                                                        findareadata.id) + str(
+                                                                        findfuncdata.id) + str(
+                                                                        subfuncins.id) + child) is not None] if ',' in str(
+                                                                sh.cell_value(i,
+                                                                              13)).strip()
+                                                            else 0 if Question.query.filter_by(
+                                                                combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    subfuncins.id) + str(
+                                                                    sh.cell_value(i, 13)).strip()) is None else
+                                                            Question.query.filter_by(
+                                                                combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    subfuncins.id) + str(
+                                                                    sh.cell_value(i, 13)).strip()).first().id
+                                                            if sh.cell_value(i, 13) != ''
+                                                            else 0
+                                                        },
+                                                        {
+                                                            "option2": str(sh.cell_value(i, 14)).strip(),
+                                                            "score": sh.cell_value(i, 15),
+                                                            "childquestionid": [
+                                                                Question.query.filter_by(combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    subfuncins.id) + child).first().id for
+                                                                child in
+                                                                str(sh.cell_value(i, 16)).strip().split(',') if
+                                                                Question.query.filter_by(
+                                                                    combination=str(projins.id) + str(
+                                                                        findareadata.id) + str(
+                                                                        findfuncdata.id) + str(
+                                                                        subfuncins.id) + child) is not None] if ',' in str(
+                                                                sh.cell_value(i,
+                                                                              16)).strip()
+                                                            else 0 if Question.query.filter_by(
+                                                                combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    subfuncins.id) + str(
+                                                                    sh.cell_value(i, 16)).strip()) is None else
+                                                            Question.query.filter_by(
+                                                                combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    subfuncins.id) + str(
+                                                                    sh.cell_value(i, 16)).strip()).first().id
+                                                            if sh.cell_value(i, 16) != ''
+                                                            else 0
+                                                        }
+                                                    ]
+                                                    maxscore = max(int(sh.cell_value(i, 12)),
+                                                                   int(sh.cell_value(i, 15)))
+                                                elif str(sh.cell_value(i, 10)).strip() == 'Multi choice':
+                                                    k = 1
+                                                    for j in range(11, sh.ncols, 3):
+                                                        if sh.cell_value(i, j) != '':
+                                                            answers.append(
+                                                                {
+                                                                    "option{0}".format(k): str(
+                                                                        sh.cell_value(i, j)).strip(),
+                                                                    "score": sh.cell_value(i, j + 1),
+                                                                    "childquestionid": [
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                subfuncins.id) + child).first().id
+                                                                        for
+                                                                        child in
+                                                                        str(sh.cell_value(i, j + 2)).strip().split(
+                                                                            ',')
+                                                                        if
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                subfuncins.id) + child) is
+                                                                        not None] if ',' in str(sh.cell_value(
+                                                                        i, j + 2)).strip()
+                                                                    else 0 if Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            subfuncins.id) + str(sh.cell_value(i,
+                                                                                                               j + 2)).
+                                                                                        strip()) is None
+                                                                    else Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            subfuncins.id) + str(
+                                                                            sh.cell_value(i,
+                                                                                          j + 2)).strip()).first().id
+                                                                    if sh.cell_value(i, j + 2) != ''
+                                                                    else 0
+                                                                })
+                                                            maxscore = maxscore + int(sh.cell_value(i, j + 1))
+                                                            k = k + 1
+                                                        else:
+                                                            break
+                                                elif str(sh.cell_value(i, 10)).strip() == 'Single choice':
+                                                    k = 1
+                                                    scores = []
+                                                    for j in range(11, sh.ncols, 3):
+                                                        if sh.cell_value(i, j) != '':
+                                                            answers.append(
+                                                                {
+                                                                    "option{0}".format(k): str(
+                                                                        sh.cell_value(i, j)).strip(),
+                                                                    "score": sh.cell_value(i, j + 1),
+                                                                    "childquestionid": [
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                subfuncins.id) + child).first().id
+                                                                        for
+                                                                        child in
+                                                                        str(sh.cell_value(i, j + 2)).strip().split(
+                                                                            ',')
+                                                                        if
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                subfuncins.id) + child) is
+                                                                        not None] if ',' in str(sh.cell_value(
+                                                                        i, j + 2)).strip()
+                                                                    else 0 if Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            subfuncins.id) + str(sh.cell_value(i,
+                                                                                                               j + 2)).
+                                                                                        strip()) is None
+                                                                    else
+                                                                    Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            subfuncins.id) + str(sh.cell_value(i, j +
+                                                                                                               2)).
+                                                                                        strip()).first().id
+                                                                    if sh.cell_value(i, j + 2) != ''
+                                                                    else 0
+                                                                })
+                                                            scores.append(int(sh.cell_value(i, j + 1)))
+                                                            k = k + 1
+                                                        else:
+                                                            break
+                                                        maxscore = max(scores)
+                                                quesins = Question(str(sh.cell_value(i, 8)).strip(),
+                                                                   str(sh.cell_value(i, 10)).strip(), answers,
+                                                                   maxscore,
+                                                                   subfuncins.id,
+                                                                   findfuncdata.id, findareadata.id,
+                                                                   projins.id,
+                                                                   combination, sh.cell_value(i, 8),
+                                                                   session['empid'])
+                                                db.session.add(quesins)
+                                                db.session.commit()
+                                                for a in answers:
+                                                    if a['childquestionid'] != 0:
+                                                        if isinstance(a['childquestionid'], list):
+                                                            for c in a['childquestionid']:
+                                                                data = Question.query.filter_by(id=c)
+                                                                result = [{col: getattr(d, col) for col in colsquestion} for
+                                                                          d
+                                                                          in data]
+                                                                quesdatabefore = result[0]
+                                                                result.clear()
+                                                                if data.first() is not None:
+                                                                    data.first().isdependentquestion = 1
+                                                                    data.first().modifiedby = session['empid']
+                                                                    data.first().islocked = 0
+                                                                    db.session.add(data.first())
+                                                                    db.session.commit()
+                                                                    data = Question.query.filter_by(id=c)
+                                                                    result = [{col: getattr(d, col) for col in colsquestion}
+                                                                              for
+                                                                              d in data]
+                                                                    quesdataafter = result[0]
+                                                                    result.clear()
+                                                                    # region call audit trail method
+                                                                    auditins = Audittrail("QUESTION", "UPDATE",
+                                                                                          str(quesdatabefore),
+                                                                                          str(quesdataafter),
+                                                                                          session['empid'])
+                                                                    db.session.add(auditins)
+                                                                    db.session.commit()
+                                                                    # end region
+                                                        else:
+                                                            data = Question.query.filter_by(id=a['childquestionid'])
+                                                            result = [{col: getattr(d, col) for col in colsquestion} for d
                                                                       in data]
                                                             quesdatabefore = result[0]
                                                             result.clear()
@@ -648,9 +1251,8 @@ def getaddproject():
                                                                 data.first().islocked = 0
                                                                 db.session.add(data.first())
                                                                 db.session.commit()
-                                                                data = Question.query.filter_by(id=c)
-                                                                result = [{col: getattr(d, col) for col in colsquestion}
-                                                                          for
+                                                                data = Question.query.filter_by(id=a['childquestionid'])
+                                                                result = [{col: getattr(d, col) for col in colsquestion} for
                                                                           d in data]
                                                                 quesdataafter = result[0]
                                                                 result.clear()
@@ -662,368 +1264,268 @@ def getaddproject():
                                                                 db.session.add(auditins)
                                                                 db.session.commit()
                                                                 # end region
-                                                    else:
-                                                        data = Question.query.filter_by(id=a['childquestionid'])
-                                                        result = [{col: getattr(d, col) for col in colsquestion} for d
-                                                                  in data]
-                                                        quesdatabefore = result[0]
-                                                        result.clear()
-                                                        if data.first() is not None:
-                                                            data.first().isdependentquestion = 1
-                                                            data.first().modifiedby = session['empid']
-                                                            data.first().islocked = 0
-                                                            db.session.add(data.first())
-                                                            db.session.commit()
-                                                            data = Question.query.filter_by(id=a['childquestionid'])
-                                                            result = [{col: getattr(d, col) for col in colsquestion} for
-                                                                      d in data]
-                                                            quesdataafter = result[0]
-                                                            result.clear()
-                                                            # region call audit trail method
-                                                            auditins = Audittrail("QUESTION", "UPDATE",
-                                                                                  str(quesdatabefore),
-                                                                                  str(quesdataafter),
-                                                                                  session['empid'])
-                                                            db.session.add(auditins)
-                                                            db.session.commit()
-                                                            # end region
-                                            data = Question.query.filter_by(id=quesins.id)
-                                            results = [{col: getattr(d, col) for col in colsquestion} for d in data]
-                                            # region call audit trail method
-                                            auditins = Audittrail("QUESTION", "ADD", None, str(results[0]),
-                                                                  session['empid'])
-                                            db.session.add(auditins)
-                                            db.session.commit()
-                                            # end region
+                                                data = Question.query.filter_by(id=quesins.id)
+                                                results = [{col: getattr(d, col) for col in colsquestion} for d in
+                                                           data]
+                                                # region call audit trail method
+                                                auditins = Audittrail("QUESTION", "ADD", None, str(results[0]),
+                                                                      session['empid'])
+                                                db.session.add(auditins)
+                                                db.session.commit()
+                                                # end region
+                                            else:
+                                                pass
                                         else:
-                                            pass
-                                else:
-                                    # add questions in func when subfunc does not exists for this func
-                                    findfuncdata = Functionality.query.filter_by(
-                                        name=sh.cell_value(i, 2),
-                                        area_id=findareadata.id).first()
-                                    combination = str(projins.id) + str(findareadata.id) + str(
-                                        findfuncdata.id) + str(sh.cell_value(i, 8))
-                                    existing_question = Question.query.filter(
-                                        Question.combination == combination).one_or_none()
-                                    if existing_question is None:
-                                        maxscore = 0
-                                        answers = []
-                                        if sh.cell_value(i, 10) == 'Yes / No':
-                                            answers = [
-                                                {
-                                                    "option1": sh.cell_value(i, 11),
-                                                    "score": sh.cell_value(i, 12),
-                                                    "childquestionid": [
-                                                        Question.query.filter_by(combination=str(projins.id) + str(
-                                                            findareadata.id) + str(
-                                                            findfuncdata.id) + child).first().id for child in
-                                                        sh.cell_value(i, 13).split(',') if Question.query.filter_by(
-                                                            combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + child) is not None] if ',' in sh.
-                                                        cell_value(i, 13)
-                                                    else 0 if Question.query.filter_by(
-                                                        combination=str(projins.id) + str(
-                                                            findareadata.id) + str(
-                                                            findfuncdata.id) + sh.cell_value(i, 13)) is None else
-                                                    Question.query.filter_by(combination=str(projins.id) + str(
-                                                        findareadata.id) + str(
-                                                        findfuncdata.id) + sh.cell_value(i, 13)).first().id
-                                                    if sh.cell_value(i, 13) != ''
-                                                    else 0
-                                                },
-                                                {
-                                                    "option2": sh.cell_value(i, 14),
-                                                    "score": sh.cell_value(i, 15),
-                                                    "childquestionid": [
-                                                        Question.query.filter_by(combination=str(projins.id) + str(
-                                                            findareadata.id) + str(
-                                                            findfuncdata.id) + child).first().id for child in
-                                                        sh.cell_value(i, 16).split(',') if Question.query.filter_by(
-                                                            combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + child) is not None] if ',' in sh.
-                                                        cell_value(i, 16)
-                                                    else 0 if Question.query.filter_by(
-                                                        combination=str(projins.id) + str(
-                                                            findareadata.id) + str(
-                                                            findfuncdata.id) + sh.cell_value(i, 16)) is None else
-                                                    Question.query.filter_by(combination=str(projins.id) + str(
-                                                        findareadata.id) + str(
-                                                        findfuncdata.id) + sh.cell_value(i, 16)).first().id
-                                                    if sh.cell_value(i, 16) != ''
-                                                    else 0
-                                                }
-                                            ]
-                                            maxscore = max(int(sh.cell_value(i, 12)), int(sh.cell_value(i, 15)))
-                                        elif sh.cell_value(i, 10) == 'Multi choice':
-                                            k = 1
-                                            for j in range(11, sh.ncols, 3):
-                                                if sh.cell_value(i, j) != '':
-                                                    answers.append(
+                                            # add questions in sub func which already exists
+                                            findsubfuncdata = Subfunctionality.query.filter(Subfunctionality.name ==
+                                                                                            sh.cell_value(i, 5),
+                                                                                            Subfunctionality.func_id
+                                                                                            == findfuncdata.id). \
+                                                one_or_none()
+                                            combination = str(projins.id) + str(findareadata.id) + str(
+                                                findfuncdata.id) + str(findsubfuncdata.id) + str(
+                                                sh.cell_value(i, 8))
+                                            existing_question = Question.query.filter(
+                                                Question.combination == combination).one_or_none()
+                                            if existing_question is None:
+                                                maxscore = 0
+                                                answers = []
+                                                if sh.cell_value(i, 10) == 'Yes / No':
+                                                    answers = [
                                                         {
-                                                            "option{0}".format(k): sh.cell_value(i, j),
-                                                            "score": sh.cell_value(i, j + 1),
+                                                            "option1": sh.cell_value(i, 11),
+                                                            "score": sh.cell_value(i, 12),
                                                             "childquestionid": [
-                                                                Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + child).first().id for
+                                                                Question.query.filter_by(combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    findsubfuncdata.id) + child).first().id for
                                                                 child in
-                                                                sh.cell_value(i, j + 2).split(',') if
+                                                                sh.cell_value(i, 13).split(',') if
                                                                 Question.query.filter_by(
                                                                     combination=str(projins.id) + str(
                                                                         findareadata.id) + str(
-                                                                        findfuncdata.id) + child) is
-                                                                not None] if ',' in sh.cell_value(
-                                                                i, j + 2)
+                                                                        findfuncdata.id) + str(
+                                                                        findsubfuncdata.id) +
+                                                                                child) is not None] if ',' in sh.cell_value(
+                                                                i, 13)
                                                             else 0 if Question.query.filter_by(
                                                                 combination=str(projins.id) + str(
                                                                     findareadata.id) + str(
-                                                                    findfuncdata.id) + sh.
-                                                                                cell_value(i, j + 2)) is None else
+                                                                    findfuncdata.id) + str(
+                                                                    findsubfuncdata.id) + sh.cell_value(i, 13)) is None else
                                                             Question.query.filter_by(
                                                                 combination=str(projins.id) + str(
                                                                     findareadata.id) + str(
-                                                                    findfuncdata.id) + sh.
-                                                                                cell_value(i, j + 2)).first().id
-                                                            if sh.cell_value(i, j + 2) != ''
+                                                                    findfuncdata.id) + str(
+                                                                    findsubfuncdata.id) + sh.cell_value(i, 13)).first().id
+                                                            if sh.cell_value(i, 13) != ''
                                                             else 0
-                                                        })
-                                                    maxscore = maxscore + int(sh.cell_value(i, j + 1))
-                                                    k = k + 1
-                                                else:
-                                                    break
-                                        elif sh.cell_value(i, 10) == 'Single choice':
-                                            k = 1
-                                            scores = []
-                                            for j in range(11, sh.ncols, 3):
-                                                if sh.cell_value(i, j) != '':
-                                                    answers.append(
+                                                        },
                                                         {
-                                                            "option{0}".format(k): sh.cell_value(i, j),
-                                                            "score": sh.cell_value(i, j + 1),
+                                                            "option2": sh.cell_value(i, 14),
+                                                            "score": sh.cell_value(i, 15),
                                                             "childquestionid": [
-                                                                Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + child).first().id for
+                                                                Question.query.filter_by(combination=str(projins.id) + str(
+                                                                    findareadata.id) + str(
+                                                                    findfuncdata.id) + str(
+                                                                    findsubfuncdata.id) + child).first().id for
                                                                 child in
-                                                                sh.cell_value(i, j + 2).split(',') if
+                                                                sh.cell_value(i, 16).split(',') if
                                                                 Question.query.filter_by(
                                                                     combination=str(projins.id) + str(
                                                                         findareadata.id) + str(
-                                                                        findfuncdata.id) + child) is
-                                                                not None] if ',' in sh.cell_value(
-                                                                i, j + 2)
+                                                                        findfuncdata.id) + str(
+                                                                        findsubfuncdata.id) +
+                                                                                child) is not None] if ',' in sh.cell_value(
+                                                                i, 16)
                                                             else 0 if Question.query.filter_by(
                                                                 combination=str(projins.id) + str(
                                                                     findareadata.id) + str(
-                                                                    findfuncdata.id) + sh.
-                                                                                cell_value(i, j + 2)) is None else
+                                                                    findfuncdata.id) + str(
+                                                                    findsubfuncdata.id) + sh.cell_value(i, 16)) is None else
                                                             Question.query.filter_by(
                                                                 combination=str(projins.id) + str(
                                                                     findareadata.id) + str(
-                                                                    findfuncdata.id) + sh.
-                                                                                cell_value(i, j + 2)).first().id
-                                                            if sh.cell_value(i, j + 2) != ''
+                                                                    findfuncdata.id) + str(
+                                                                    findsubfuncdata.id) + sh.cell_value(i, 16)).first().id
+                                                            if sh.cell_value(i, 16) != ''
                                                             else 0
-                                                        })
-                                                    scores.append(int(sh.cell_value(i, j + 1)))
-                                                    k = k + 1
-                                                else:
-                                                    break
-                                                maxscore = max(scores)
-                                        quesins = Question(sh.cell_value(i, 8), sh.cell_value(i, 10), answers,
-                                                           maxscore,
-                                                           None,
-                                                           findfuncdata.id, findareadata.id, projins.id,
-                                                           combination, sh.cell_value(i, 9), session['empid'])
-                                        db.session.add(quesins)
-                                        db.session.commit()
-                                        for a in answers:
-                                            if a['childquestionid'] != 0:
-                                                if isinstance(a['childquestionid'], list):
-                                                    for c in a['childquestionid']:
-                                                        data = Question.query.filter_by(id=c)
-                                                        result = [{col: getattr(d, col) for col in colsquestion} for d
-                                                                  in data]
-                                                        quesdatabefore = result[0]
-                                                        result.clear()
-                                                        if data.first() is not None:
-                                                            data.first().isdependentquestion = 1
-                                                            data.first().modifiedby = session['empid']
-                                                            data.first().islocked = 0
-                                                            db.session.add(data.first())
-                                                            db.session.commit()
-                                                            data = Question.query.filter_by(id=c)
-                                                            result = [{col: getattr(d, col) for col in colsquestion} for
-                                                                      d in data]
-                                                            quesdataafter = result[0]
+                                                        }
+                                                    ]
+                                                    maxscore = max(int(sh.cell_value(i, 12)),
+                                                                   int(sh.cell_value(i, 15)))
+                                                elif sh.cell_value(i, 10) == 'Multi choice':
+                                                    k = 1
+                                                    for j in range(11, sh.ncols, 3):
+                                                        if sh.cell_value(i, j) != '':
+                                                            answers.append(
+                                                                {
+                                                                    "option{0}".format(k): sh.cell_value(i, j),
+                                                                    "score": sh.cell_value(i, j + 1),
+                                                                    "childquestionid": [
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                findsubfuncdata.id) + child).first().id
+                                                                        for
+                                                                        child in
+                                                                        sh.cell_value(i, j + 2).split(',') if
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                findsubfuncdata.id) + child) is
+                                                                        not None] if ',' in sh.cell_value(
+                                                                        i, j + 2)
+                                                                    else 0 if Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            findsubfuncdata.id) +
+                                                                                    sh.cell_value(i, j + 2)) is None else
+                                                                    Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            findsubfuncdata.id) +
+                                                                                    sh.cell_value(i, j + 2)).first().id
+                                                                    if sh.cell_value(i, j + 2) != ''
+                                                                    else 0
+                                                                })
+                                                            maxscore = maxscore + int(sh.cell_value(i, j + 1))
+                                                            k = k + 1
+                                                        else:
+                                                            break
+                                                elif sh.cell_value(i, 10) == 'Single choice':
+                                                    k = 1
+                                                    scores = []
+                                                    for j in range(11, sh.ncols, 3):
+                                                        if sh.cell_value(i, j) != '':
+                                                            answers.append(
+                                                                {
+                                                                    "option{0}".format(k): sh.cell_value(i, j),
+                                                                    "score": sh.cell_value(i, j + 1),
+                                                                    "childquestionid": [
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                findsubfuncdata.id) + child).first().id
+                                                                        for
+                                                                        child in
+                                                                        sh.cell_value(i, j + 2).split(',') if
+                                                                        Question.query.filter_by(
+                                                                            combination=str(projins.id) + str(
+                                                                                findareadata.id) + str(
+                                                                                findfuncdata.id) + str(
+                                                                                findsubfuncdata.id) + child) is
+                                                                        not None] if ',' in sh.cell_value(
+                                                                        i, j + 2)
+                                                                    else 0 if Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            findsubfuncdata.id) +
+                                                                                    sh.cell_value(i, j + 2)) is None else
+                                                                    Question.query.filter_by(
+                                                                        combination=str(projins.id) + str(
+                                                                            findareadata.id) + str(
+                                                                            findfuncdata.id) + str(
+                                                                            findsubfuncdata.id) +
+                                                                                    sh.cell_value(i, j + 2)).first().id
+                                                                    if sh.cell_value(i, j + 2) != ''
+                                                                    else 0
+                                                                })
+                                                            scores.append(int(sh.cell_value(i, j + 1)))
+                                                            k = k + 1
+                                                        else:
+                                                            break
+                                                        maxscore = max(scores)
+                                                quesins = Question(sh.cell_value(i, 8), sh.cell_value(i, 10),
+                                                                   answers,
+                                                                   maxscore,
+                                                                   findsubfuncdata.id,
+                                                                   findfuncdata.id, findareadata.id,
+                                                                   projins.id,
+                                                                   combination, sh.cell_value(i, 9),
+                                                                   session['empid'])
+                                                db.session.add(quesins)
+                                                db.session.commit()
+                                                for a in answers:
+                                                    if a['childquestionid'] != 0:
+                                                        if isinstance(a['childquestionid'], list):
+                                                            for c in a['childquestionid']:
+                                                                data = Question.query.filter_by(id=c)
+                                                                result = [{col: getattr(d, col) for col in colsquestion} for
+                                                                          d
+                                                                          in data]
+                                                                quesdatabefore = result[0]
+                                                                result.clear()
+                                                                if data.first() is not None:
+                                                                    data.first().isdependentquestion = 1
+                                                                    data.first().modifiedby = session['empid']
+                                                                    data.first().islocked = 0
+                                                                    db.session.add(data.first())
+                                                                    db.session.commit()
+                                                                    data = Question.query.filter_by(id=c)
+                                                                    result = [{col: getattr(d, col) for col in colsquestion}
+                                                                              for
+                                                                              d in data]
+                                                                    quesdataafter = result[0]
+                                                                    result.clear()
+                                                                    # region call audit trail method
+                                                                    auditins = Audittrail("QUESTION", "UPDATE",
+                                                                                          str(quesdatabefore),
+                                                                                          str(quesdataafter),
+                                                                                          session['empid'])
+                                                                    db.session.add(auditins)
+                                                                    db.session.commit()
+                                                                    # end region
+                                                        else:
+                                                            data = Question.query.filter_by(id=a['childquestionid'])
+                                                            result = [{col: getattr(d, col) for col in colsquestion} for d
+                                                                      in data]
+                                                            quesdatabefore = result[0]
                                                             result.clear()
-                                                            # region call audit trail method
-                                                            auditins = Audittrail("QUESTION", "UPDATE",
-                                                                                  str(quesdatabefore),
-                                                                                  str(quesdataafter),
-                                                                                  session['empid'])
-                                                            db.session.add(auditins)
-                                                            db.session.commit()
-                                                            # end region
-                                                else:
-                                                    data = Question.query.filter_by(id=a['childquestionid'])
-                                                    result = [{col: getattr(d, col) for col in colsquestion} for d
-                                                              in data]
-                                                    quesdatabefore = result[0]
-                                                    result.clear()
-                                                    if data.first() is not None:
-                                                        data.first().isdependentquestion = 1
-                                                        data.first().modifiedby = session['empid']
-                                                        data.first().islocked = 0
-                                                        db.session.add(data.first())
-                                                        db.session.commit()
-                                                        data = Question.query.filter_by(id=a['childquestionid'])
-                                                        result = [{col: getattr(d, col) for col in colsquestion} for
-                                                                  d in data]
-                                                        quesdataafter = result[0]
-                                                        result.clear()
-                                                        # region call audit trail method
-                                                        auditins = Audittrail("QUESTION", "UPDATE",
-                                                                              str(quesdatabefore),
-                                                                              str(quesdataafter),
-                                                                              session['empid'])
-                                                        db.session.add(auditins)
-                                                        db.session.commit()
-                                                        # end region
-                                        data = Question.query.filter_by(id=quesins.id)
-                                        results = [{col: getattr(d, col) for col in colsquestion} for d in data]
-                                        # region call audit trail method
-                                        auditins = Audittrail("QUESTION", "ADD", None, str(results[0]),
-                                                              session['empid'])
-                                        db.session.add(auditins)
-                                        db.session.commit()
-                                        # end region
+                                                            if data.first() is not None:
+                                                                data.first().isdependentquestion = 1
+                                                                data.first().modifiedby = session['empid']
+                                                                data.first().islocked = 0
+                                                                db.session.add(data.first())
+                                                                db.session.commit()
+                                                                data = Question.query.filter_by(id=a['childquestionid'])
+                                                                result = [{col: getattr(d, col) for col in colsquestion} for
+                                                                          d in data]
+                                                                quesdataafter = result[0]
+                                                                result.clear()
+                                                                # region call audit trail method
+                                                                auditins = Audittrail("QUESTION", "UPDATE",
+                                                                                      str(quesdatabefore),
+                                                                                      str(quesdataafter),
+                                                                                      session['empid'])
+                                                                db.session.add(auditins)
+                                                                db.session.commit()
+                                                                # end region
+                                                data = Question.query.filter_by(id=quesins.id)
+                                                results = [{col: getattr(d, col) for col in colsquestion} for d in
+                                                           data]
+                                                # region call audit trail method
+                                                auditins = Audittrail("QUESTION", "ADD", None, str(results[0]),
+                                                                      session['empid'])
+                                                db.session.add(auditins)
+                                                db.session.commit()
+                                                # end region
+                                            else:
+                                                pass
                                     else:
-                                        pass
-                            return make_response(jsonify({"message": f"Project {projname} has been successfully "
-                                                                     f"added with "
-                                                                     f"default assessments.",
-                                                          "data": newaddedproject})), 201
-                        elif 'udquesfilebase64' in res and 'filename' in res:
-                            xldecoded = base64.b64decode(res['udquesfilebase64'])
-                            xlfile = open(os.path.join('static/', res['filename']), 'wb')
-                            xlfile.write(xldecoded)
-                            xlfile.close()
-                            wb = xlrd.open_workbook('static/' + res['filename'])
-                            sh = wb.sheet_by_name('Sheet2')
-                            for i in range(1, sh.nrows):
-                                existing_area = Area.query.filter(Area.name == str(sh.cell_value(i, 0)).strip(),
-                                                                  Area.projectid == projins.id).one_or_none()
-                                if existing_area is None:
-                                    areains = Area(str(sh.cell_value(i, 0)).strip(),
-                                                   str(sh.cell_value(i, 1)).strip(), projins.id, session['empid'])
-                                    db.session.add(areains)
-                                    db.session.commit()
-                                    data = Area.query.filter_by(id=areains.id)
-                                    for d in data:
-                                        json_data = mergedict({'id': d.id},
-                                                              {'name': d.name},
-                                                              {'description': d.description},
-                                                              {'projectid': d.projectid},
-                                                              {'assessmentcompletion': str(
-                                                                  d.assessmentcompletion)},
-                                                              {'achievedpercentage': str(d.achievedpercentage)},
-                                                              {'achievedlevel': d.achievedlevel},
-                                                              {'creationdatetime': d.creationdatetime},
-                                                              {'prevassessmentcompletion': str(
-                                                                  d.prevassessmentcompletion)},
-                                                              {'prevachievedpercentage': str(d.prevachievedpercentage)},
-                                                              {'updationdatetime': d.updationdatetime},
-                                                              {'createdby': d.createdby},
-                                                              {'modifiedby': d.modifiedby})
-                                        results.append(json_data)
-                                    # region call audit trail method
-                                    auditins = Audittrail("AREA", "ADD", None, str(results[0]),
-                                                          session['empid'])
-                                    db.session.add(auditins)
-                                    db.session.commit()
-                                    # end region
-                                findareadata = Area.query.filter_by(name=str(sh.cell_value(i, 0)).strip(),
-                                                                    projectid=projins.id).first()
-                                existing_functionality = Functionality.query.filter(
-                                    Functionality.name == str(sh.cell_value(i, 2)).strip(),
-                                    Functionality.area_id ==
-                                    findareadata.id).one_or_none()
-                                if existing_functionality is None:
-                                    funcins = Functionality(str(sh.cell_value(i, 2)).strip(),
-                                                            str(sh.cell_value(i, 3)).strip(),
-                                                            sh.cell_value(i, 7)
-                                                            if str(sh.cell_value(i, 5)).strip() == '' else None,
-                                                            findareadata.id, projins.id, session['empid'],
-                                                            1 if sh.cell_value(i, 4) == 'Very High' else
-                                                            2 if sh.cell_value(i, 4) == 'High' else 3 if sh.cell_value(
-                                                                i, 4) == 'Medium' else
-                                                            4 if sh.cell_value(i, 4) == 'Low' else
-                                                            5 if sh.cell_value(i, 4) == 'Very Low' else
-                                                            None)
-                                    db.session.add(funcins)
-                                    db.session.commit()
-                                    data = Functionality.query.filter_by(id=funcins.id)
-                                    for d in data:
-                                        json_data = mergedict({'id': d.id},
-                                                              {'name': d.name},
-                                                              {'description': d.description},
-                                                              {'retake_assessment_days':
-                                                                   d.retake_assessment_days},
-                                                              {'area_id': d.area_id},
-                                                              {'proj_id': d.proj_id},
-                                                              {'assessmentcompletion': str(
-                                                                  d.assessmentcompletion)},
-                                                              {'achievedpercentage': str(d.achievedpercentage)},
-                                                              {'achievedlevel': d.achievedlevel},
-                                                              {'creationdatetime': d.creationdatetime},
-                                                              {'prevassessmentcompletion': str(
-                                                                  d.prevassessmentcompletion)},
-                                                              {'prevachievedpercentage': str(d.prevachievedpercentage)},
-                                                              {'updationdatetime': d.updationdatetime},
-                                                              {'createdby': d.createdby},
-                                                              {'modifiedby': d.modifiedby})
-                                        results.append(json_data)
-                                    # region call audit trail method
-                                    auditins = Audittrail("FUNCTIONALITY", "ADD", None, str(results[0]),
-                                                          session['empid'])
-                                    db.session.add(auditins)
-                                    db.session.commit()
-                                    # end region
-                                if sh.cell_value(i, 5) != '':
-                                    findfuncdata = Functionality.query.filter_by(
-                                        name=str(sh.cell_value(i, 2)).strip(),
-                                        area_id=findareadata.id).first()
-                                    existing_subfunctionality = Subfunctionality.query.filter(
-                                        Subfunctionality.name ==
-                                        str(sh.cell_value(i, 5)).strip(),
-                                        Subfunctionality.func_id ==
-                                        findfuncdata.id).one_or_none()
-                                    if existing_subfunctionality is None:
-                                        subfuncins = Subfunctionality(str(sh.cell_value(i, 5)).strip(),
-                                                                      str(sh.cell_value(i, 6)).strip(),
-                                                                      sh.cell_value(i, 7),
-                                                                      findfuncdata.id, findareadata.id,
-                                                                      projins.id, session['empid'])
-                                        db.session.add(subfuncins)
-                                        db.session.commit()
-                                        data = Subfunctionality.query.filter_by(id=subfuncins.id)
-                                        results = [{col: getattr(d, col) for col in cols_subfunc} for d in data]
-                                        # region call audit trail method
-                                        auditins = Audittrail("SUB-FUNCTIONALITY", "ADD", None, str(results[0]),
-                                                              session['empid'])
-                                        db.session.add(auditins)
-                                        db.session.commit()
-                                        # end region
-                                        # add question in new sub func
+                                        # add questions in func when subfunc does not exists for this func
+                                        findfuncdata = Functionality.query.filter_by(
+                                            name=str(sh.cell_value(i, 2)).strip(),
+                                            area_id=findareadata.id).first()
                                         combination = str(projins.id) + str(findareadata.id) + str(
-                                            findfuncdata.id) + str(subfuncins.id) + str(
-                                            sh.cell_value(i, 8)).strip()
+                                            findfuncdata.id) + str(sh.cell_value(i, 8)).strip()
                                         existing_question = Question.query.filter(
                                             Question.combination == combination).one_or_none()
                                         if existing_question is None:
@@ -1037,28 +1539,24 @@ def getaddproject():
                                                         "childquestionid": [
                                                             Question.query.filter_by(combination=str(projins.id) + str(
                                                                 findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                subfuncins.id) + child).first().id for
+                                                                findfuncdata.id) + child).first().id for
                                                             child in
                                                             str(sh.cell_value(i, 13)).strip().split(',') if
                                                             Question.query.filter_by(
                                                                 combination=str(projins.id) + str(
                                                                     findareadata.id) + str(
-                                                                    findfuncdata.id) + str(
-                                                                    subfuncins.id) + child) is not None] if ',' in str(
+                                                                    findfuncdata.id) + child) is not None] if ',' in str(
                                                             sh.cell_value(i,
                                                                           13)).strip()
                                                         else 0 if Question.query.filter_by(
                                                             combination=str(projins.id) + str(
                                                                 findareadata.id) + str(
                                                                 findfuncdata.id) + str(
-                                                                subfuncins.id) + str(
                                                                 sh.cell_value(i, 13)).strip()) is None else
                                                         Question.query.filter_by(
                                                             combination=str(projins.id) + str(
                                                                 findareadata.id) + str(
                                                                 findfuncdata.id) + str(
-                                                                subfuncins.id) + str(
                                                                 sh.cell_value(i, 13)).strip()).first().id
                                                         if sh.cell_value(i, 13) != ''
                                                         else 0
@@ -1069,35 +1567,30 @@ def getaddproject():
                                                         "childquestionid": [
                                                             Question.query.filter_by(combination=str(projins.id) + str(
                                                                 findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                subfuncins.id) + child).first().id for
+                                                                findfuncdata.id) + child).first().id for
                                                             child in
                                                             str(sh.cell_value(i, 16)).strip().split(',') if
                                                             Question.query.filter_by(
                                                                 combination=str(projins.id) + str(
                                                                     findareadata.id) + str(
-                                                                    findfuncdata.id) + str(
-                                                                    subfuncins.id) + child) is not None] if ',' in str(
+                                                                    findfuncdata.id) + child) is not None] if ',' in str(
                                                             sh.cell_value(i,
                                                                           16)).strip()
                                                         else 0 if Question.query.filter_by(
                                                             combination=str(projins.id) + str(
                                                                 findareadata.id) + str(
                                                                 findfuncdata.id) + str(
-                                                                subfuncins.id) + str(
                                                                 sh.cell_value(i, 16)).strip()) is None else
                                                         Question.query.filter_by(
                                                             combination=str(projins.id) + str(
                                                                 findareadata.id) + str(
                                                                 findfuncdata.id) + str(
-                                                                subfuncins.id) + str(
                                                                 sh.cell_value(i, 16)).strip()).first().id
                                                         if sh.cell_value(i, 16) != ''
                                                         else 0
                                                     }
                                                 ]
-                                                maxscore = max(int(sh.cell_value(i, 12)),
-                                                               int(sh.cell_value(i, 15)))
+                                                maxscore = max(int(sh.cell_value(i, 12)), int(sh.cell_value(i, 15)))
                                             elif str(sh.cell_value(i, 10)).strip() == 'Multi choice':
                                                 k = 1
                                                 for j in range(11, sh.ncols, 3):
@@ -1111,34 +1604,29 @@ def getaddproject():
                                                                     Question.query.filter_by(
                                                                         combination=str(projins.id) + str(
                                                                             findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            subfuncins.id) + child).first().id
+                                                                            findfuncdata.id) + child).first().id
                                                                     for
                                                                     child in
-                                                                    str(sh.cell_value(i, j + 2)).strip().split(
-                                                                        ',')
+                                                                    str(sh.cell_value(i, j + 2)).strip().split(',')
                                                                     if
                                                                     Question.query.filter_by(
                                                                         combination=str(projins.id) + str(
                                                                             findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            subfuncins.id) + child) is
-                                                                    not None] if ',' in str(sh.cell_value(
-                                                                    i, j + 2)).strip()
+                                                                            findfuncdata.id) + child) is
+                                                                    not None] if ',' in str(sh.cell_value(i,
+                                                                                                          j +
+                                                                                                          2)).strip()
                                                                 else 0 if Question.query.filter_by(
                                                                     combination=str(projins.id) + str(
                                                                         findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        subfuncins.id) + str(sh.cell_value(i,
-                                                                                                           j + 2)).
-                                                                                    strip()) is None
+                                                                        findfuncdata.id) +
+                                                                                str(sh.cell_value(i,
+                                                                                                  j + 2)).strip()) is None
                                                                 else Question.query.filter_by(
                                                                     combination=str(projins.id) + str(
                                                                         findareadata.id) + str(
                                                                         findfuncdata.id) + str(
-                                                                        subfuncins.id) + str(
-                                                                        sh.cell_value(i,
-                                                                                      j + 2)).strip()).first().id
+                                                                        sh.cell_value(i, j + 2)).strip()).first().id
                                                                 if sh.cell_value(i, j + 2) != ''
                                                                 else 0
                                                             })
@@ -1160,34 +1648,30 @@ def getaddproject():
                                                                     Question.query.filter_by(
                                                                         combination=str(projins.id) + str(
                                                                             findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            subfuncins.id) + child).first().id
+                                                                            findfuncdata.id) + child).first().id
                                                                     for
                                                                     child in
-                                                                    str(sh.cell_value(i, j + 2)).strip().split(
-                                                                        ',')
+                                                                    str(sh.cell_value(i, j + 2)).strip().split(',')
                                                                     if
                                                                     Question.query.filter_by(
                                                                         combination=str(projins.id) + str(
                                                                             findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            subfuncins.id) + child) is
-                                                                    not None] if ',' in str(sh.cell_value(
-                                                                    i, j + 2)).strip()
+                                                                            findfuncdata.id) + child) is
+                                                                    not None] if ',' in str(sh.cell_value(i,
+                                                                                                          j +
+                                                                                                          2)).strip()
                                                                 else 0 if Question.query.filter_by(
                                                                     combination=str(projins.id) + str(
                                                                         findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        subfuncins.id) + str(sh.cell_value(i,
-                                                                                                           j + 2)).
-                                                                                    strip()) is None
+                                                                        findfuncdata.id) +
+                                                                                str(sh.cell_value(i,
+                                                                                                  j + 2)).strip()) is None
                                                                 else
                                                                 Question.query.filter_by(
                                                                     combination=str(projins.id) + str(
                                                                         findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        subfuncins.id) + str(sh.cell_value(i, j +
-                                                                                                           2)).
+                                                                        findfuncdata.id) +
+                                                                                str(sh.cell_value(i, j + 2)).
                                                                                     strip()).first().id
                                                                 if sh.cell_value(i, j + 2) != ''
                                                                 else 0
@@ -1200,11 +1684,9 @@ def getaddproject():
                                             quesins = Question(str(sh.cell_value(i, 8)).strip(),
                                                                str(sh.cell_value(i, 10)).strip(), answers,
                                                                maxscore,
-                                                               subfuncins.id,
-                                                               findfuncdata.id, findareadata.id,
-                                                               projins.id,
-                                                               combination, sh.cell_value(i, 8),
-                                                               session['empid'])
+                                                               None,
+                                                               findfuncdata.id, findareadata.id, projins.id,
+                                                               combination, sh.cell_value(i, 9), session['empid'])
                                             db.session.add(quesins)
                                             db.session.commit()
                                             for a in answers:
@@ -1212,8 +1694,7 @@ def getaddproject():
                                                     if isinstance(a['childquestionid'], list):
                                                         for c in a['childquestionid']:
                                                             data = Question.query.filter_by(id=c)
-                                                            result = [{col: getattr(d, col) for col in colsquestion} for
-                                                                      d
+                                                            result = [{col: getattr(d, col) for col in colsquestion} for d
                                                                       in data]
                                                             quesdatabefore = result[0]
                                                             result.clear()
@@ -1224,8 +1705,7 @@ def getaddproject():
                                                                 db.session.add(data.first())
                                                                 db.session.commit()
                                                                 data = Question.query.filter_by(id=c)
-                                                                result = [{col: getattr(d, col) for col in colsquestion}
-                                                                          for
+                                                                result = [{col: getattr(d, col) for col in colsquestion} for
                                                                           d in data]
                                                                 quesdataafter = result[0]
                                                                 result.clear()
@@ -1263,8 +1743,7 @@ def getaddproject():
                                                             db.session.commit()
                                                             # end region
                                             data = Question.query.filter_by(id=quesins.id)
-                                            results = [{col: getattr(d, col) for col in colsquestion} for d in
-                                                       data]
+                                            results = [{col: getattr(d, col) for col in colsquestion} for d in data]
                                             # region call audit trail method
                                             auditins = Audittrail("QUESTION", "ADD", None, str(results[0]),
                                                                   session['empid'])
@@ -1273,495 +1752,22 @@ def getaddproject():
                                             # end region
                                         else:
                                             pass
-                                    else:
-                                        # add questions in sub func which already exists
-                                        findsubfuncdata = Subfunctionality.query.filter(Subfunctionality.name ==
-                                                                                        sh.cell_value(i, 5),
-                                                                                        Subfunctionality.func_id
-                                                                                        == findfuncdata.id). \
-                                            one_or_none()
-                                        combination = str(projins.id) + str(findareadata.id) + str(
-                                            findfuncdata.id) + str(findsubfuncdata.id) + str(
-                                            sh.cell_value(i, 8))
-                                        existing_question = Question.query.filter(
-                                            Question.combination == combination).one_or_none()
-                                        if existing_question is None:
-                                            maxscore = 0
-                                            answers = []
-                                            if sh.cell_value(i, 10) == 'Yes / No':
-                                                answers = [
-                                                    {
-                                                        "option1": sh.cell_value(i, 11),
-                                                        "score": sh.cell_value(i, 12),
-                                                        "childquestionid": [
-                                                            Question.query.filter_by(combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                findsubfuncdata.id) + child).first().id for
-                                                            child in
-                                                            sh.cell_value(i, 13).split(',') if
-                                                            Question.query.filter_by(
-                                                                combination=str(projins.id) + str(
-                                                                    findareadata.id) + str(
-                                                                    findfuncdata.id) + str(
-                                                                    findsubfuncdata.id) +
-                                                                            child) is not None] if ',' in sh.cell_value(
-                                                            i, 13)
-                                                        else 0 if Question.query.filter_by(
-                                                            combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                findsubfuncdata.id) + sh.cell_value(i, 13)) is None else
-                                                        Question.query.filter_by(
-                                                            combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                findsubfuncdata.id) + sh.cell_value(i, 13)).first().id
-                                                        if sh.cell_value(i, 13) != ''
-                                                        else 0
-                                                    },
-                                                    {
-                                                        "option2": sh.cell_value(i, 14),
-                                                        "score": sh.cell_value(i, 15),
-                                                        "childquestionid": [
-                                                            Question.query.filter_by(combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                findsubfuncdata.id) + child).first().id for
-                                                            child in
-                                                            sh.cell_value(i, 16).split(',') if
-                                                            Question.query.filter_by(
-                                                                combination=str(projins.id) + str(
-                                                                    findareadata.id) + str(
-                                                                    findfuncdata.id) + str(
-                                                                    findsubfuncdata.id) +
-                                                                            child) is not None] if ',' in sh.cell_value(
-                                                            i, 16)
-                                                        else 0 if Question.query.filter_by(
-                                                            combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                findsubfuncdata.id) + sh.cell_value(i, 16)) is None else
-                                                        Question.query.filter_by(
-                                                            combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + str(
-                                                                findsubfuncdata.id) + sh.cell_value(i, 16)).first().id
-                                                        if sh.cell_value(i, 16) != ''
-                                                        else 0
-                                                    }
-                                                ]
-                                                maxscore = max(int(sh.cell_value(i, 12)),
-                                                               int(sh.cell_value(i, 15)))
-                                            elif sh.cell_value(i, 10) == 'Multi choice':
-                                                k = 1
-                                                for j in range(11, sh.ncols, 3):
-                                                    if sh.cell_value(i, j) != '':
-                                                        answers.append(
-                                                            {
-                                                                "option{0}".format(k): sh.cell_value(i, j),
-                                                                "score": sh.cell_value(i, j + 1),
-                                                                "childquestionid": [
-                                                                    Question.query.filter_by(
-                                                                        combination=str(projins.id) + str(
-                                                                            findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            findsubfuncdata.id) + child).first().id
-                                                                    for
-                                                                    child in
-                                                                    sh.cell_value(i, j + 2).split(',') if
-                                                                    Question.query.filter_by(
-                                                                        combination=str(projins.id) + str(
-                                                                            findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            findsubfuncdata.id) + child) is
-                                                                    not None] if ',' in sh.cell_value(
-                                                                    i, j + 2)
-                                                                else 0 if Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        findsubfuncdata.id) +
-                                                                                sh.cell_value(i, j + 2)) is None else
-                                                                Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        findsubfuncdata.id) +
-                                                                                sh.cell_value(i, j + 2)).first().id
-                                                                if sh.cell_value(i, j + 2) != ''
-                                                                else 0
-                                                            })
-                                                        maxscore = maxscore + int(sh.cell_value(i, j + 1))
-                                                        k = k + 1
-                                                    else:
-                                                        break
-                                            elif sh.cell_value(i, 10) == 'Single choice':
-                                                k = 1
-                                                scores = []
-                                                for j in range(11, sh.ncols, 3):
-                                                    if sh.cell_value(i, j) != '':
-                                                        answers.append(
-                                                            {
-                                                                "option{0}".format(k): sh.cell_value(i, j),
-                                                                "score": sh.cell_value(i, j + 1),
-                                                                "childquestionid": [
-                                                                    Question.query.filter_by(
-                                                                        combination=str(projins.id) + str(
-                                                                            findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            findsubfuncdata.id) + child).first().id
-                                                                    for
-                                                                    child in
-                                                                    sh.cell_value(i, j + 2).split(',') if
-                                                                    Question.query.filter_by(
-                                                                        combination=str(projins.id) + str(
-                                                                            findareadata.id) + str(
-                                                                            findfuncdata.id) + str(
-                                                                            findsubfuncdata.id) + child) is
-                                                                    not None] if ',' in sh.cell_value(
-                                                                    i, j + 2)
-                                                                else 0 if Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        findsubfuncdata.id) +
-                                                                                sh.cell_value(i, j + 2)) is None else
-                                                                Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + str(
-                                                                        findsubfuncdata.id) +
-                                                                                sh.cell_value(i, j + 2)).first().id
-                                                                if sh.cell_value(i, j + 2) != ''
-                                                                else 0
-                                                            })
-                                                        scores.append(int(sh.cell_value(i, j + 1)))
-                                                        k = k + 1
-                                                    else:
-                                                        break
-                                                    maxscore = max(scores)
-                                            quesins = Question(sh.cell_value(i, 8), sh.cell_value(i, 10),
-                                                               answers,
-                                                               maxscore,
-                                                               findsubfuncdata.id,
-                                                               findfuncdata.id, findareadata.id,
-                                                               projins.id,
-                                                               combination, sh.cell_value(i, 9),
-                                                               session['empid'])
-                                            db.session.add(quesins)
-                                            db.session.commit()
-                                            for a in answers:
-                                                if a['childquestionid'] != 0:
-                                                    if isinstance(a['childquestionid'], list):
-                                                        for c in a['childquestionid']:
-                                                            data = Question.query.filter_by(id=c)
-                                                            result = [{col: getattr(d, col) for col in colsquestion} for
-                                                                      d
-                                                                      in data]
-                                                            quesdatabefore = result[0]
-                                                            result.clear()
-                                                            if data.first() is not None:
-                                                                data.first().isdependentquestion = 1
-                                                                data.first().modifiedby = session['empid']
-                                                                data.first().islocked = 0
-                                                                db.session.add(data.first())
-                                                                db.session.commit()
-                                                                data = Question.query.filter_by(id=c)
-                                                                result = [{col: getattr(d, col) for col in colsquestion}
-                                                                          for
-                                                                          d in data]
-                                                                quesdataafter = result[0]
-                                                                result.clear()
-                                                                # region call audit trail method
-                                                                auditins = Audittrail("QUESTION", "UPDATE",
-                                                                                      str(quesdatabefore),
-                                                                                      str(quesdataafter),
-                                                                                      session['empid'])
-                                                                db.session.add(auditins)
-                                                                db.session.commit()
-                                                                # end region
-                                                    else:
-                                                        data = Question.query.filter_by(id=a['childquestionid'])
-                                                        result = [{col: getattr(d, col) for col in colsquestion} for d
-                                                                  in data]
-                                                        quesdatabefore = result[0]
-                                                        result.clear()
-                                                        if data.first() is not None:
-                                                            data.first().isdependentquestion = 1
-                                                            data.first().modifiedby = session['empid']
-                                                            data.first().islocked = 0
-                                                            db.session.add(data.first())
-                                                            db.session.commit()
-                                                            data = Question.query.filter_by(id=a['childquestionid'])
-                                                            result = [{col: getattr(d, col) for col in colsquestion} for
-                                                                      d in data]
-                                                            quesdataafter = result[0]
-                                                            result.clear()
-                                                            # region call audit trail method
-                                                            auditins = Audittrail("QUESTION", "UPDATE",
-                                                                                  str(quesdatabefore),
-                                                                                  str(quesdataafter),
-                                                                                  session['empid'])
-                                                            db.session.add(auditins)
-                                                            db.session.commit()
-                                                            # end region
-                                            data = Question.query.filter_by(id=quesins.id)
-                                            results = [{col: getattr(d, col) for col in colsquestion} for d in
-                                                       data]
-                                            # region call audit trail method
-                                            auditins = Audittrail("QUESTION", "ADD", None, str(results[0]),
-                                                                  session['empid'])
-                                            db.session.add(auditins)
-                                            db.session.commit()
-                                            # end region
-                                        else:
-                                            pass
-                                else:
-                                    # add questions in func when subfunc does not exists for this func
-                                    findfuncdata = Functionality.query.filter_by(
-                                        name=str(sh.cell_value(i, 2)).strip(),
-                                        area_id=findareadata.id).first()
-                                    combination = str(projins.id) + str(findareadata.id) + str(
-                                        findfuncdata.id) + str(sh.cell_value(i, 8)).strip()
-                                    existing_question = Question.query.filter(
-                                        Question.combination == combination).one_or_none()
-                                    if existing_question is None:
-                                        maxscore = 0
-                                        answers = []
-                                        if str(sh.cell_value(i, 10)).strip() == 'Yes / No':
-                                            answers = [
-                                                {
-                                                    "option1": str(sh.cell_value(i, 11)).strip(),
-                                                    "score": sh.cell_value(i, 12),
-                                                    "childquestionid": [
-                                                        Question.query.filter_by(combination=str(projins.id) + str(
-                                                            findareadata.id) + str(
-                                                            findfuncdata.id) + child).first().id for
-                                                        child in
-                                                        str(sh.cell_value(i, 13)).strip().split(',') if
-                                                        Question.query.filter_by(
-                                                            combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + child) is not None] if ',' in str(
-                                                        sh.cell_value(i,
-                                                                      13)).strip()
-                                                    else 0 if Question.query.filter_by(
-                                                        combination=str(projins.id) + str(
-                                                            findareadata.id) + str(
-                                                            findfuncdata.id) + str(
-                                                            sh.cell_value(i, 13)).strip()) is None else
-                                                    Question.query.filter_by(
-                                                        combination=str(projins.id) + str(
-                                                            findareadata.id) + str(
-                                                            findfuncdata.id) + str(
-                                                            sh.cell_value(i, 13)).strip()).first().id
-                                                    if sh.cell_value(i, 13) != ''
-                                                    else 0
-                                                },
-                                                {
-                                                    "option2": str(sh.cell_value(i, 14)).strip(),
-                                                    "score": sh.cell_value(i, 15),
-                                                    "childquestionid": [
-                                                        Question.query.filter_by(combination=str(projins.id) + str(
-                                                            findareadata.id) + str(
-                                                            findfuncdata.id) + child).first().id for
-                                                        child in
-                                                        str(sh.cell_value(i, 16)).strip().split(',') if
-                                                        Question.query.filter_by(
-                                                            combination=str(projins.id) + str(
-                                                                findareadata.id) + str(
-                                                                findfuncdata.id) + child) is not None] if ',' in str(
-                                                        sh.cell_value(i,
-                                                                      16)).strip()
-                                                    else 0 if Question.query.filter_by(
-                                                        combination=str(projins.id) + str(
-                                                            findareadata.id) + str(
-                                                            findfuncdata.id) + str(
-                                                            sh.cell_value(i, 16)).strip()) is None else
-                                                    Question.query.filter_by(
-                                                        combination=str(projins.id) + str(
-                                                            findareadata.id) + str(
-                                                            findfuncdata.id) + str(
-                                                            sh.cell_value(i, 16)).strip()).first().id
-                                                    if sh.cell_value(i, 16) != ''
-                                                    else 0
-                                                }
-                                            ]
-                                            maxscore = max(int(sh.cell_value(i, 12)), int(sh.cell_value(i, 15)))
-                                        elif str(sh.cell_value(i, 10)).strip() == 'Multi choice':
-                                            k = 1
-                                            for j in range(11, sh.ncols, 3):
-                                                if sh.cell_value(i, j) != '':
-                                                    answers.append(
-                                                        {
-                                                            "option{0}".format(k): str(
-                                                                sh.cell_value(i, j)).strip(),
-                                                            "score": sh.cell_value(i, j + 1),
-                                                            "childquestionid": [
-                                                                Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + child).first().id
-                                                                for
-                                                                child in
-                                                                str(sh.cell_value(i, j + 2)).strip().split(',')
-                                                                if
-                                                                Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + child) is
-                                                                not None] if ',' in str(sh.cell_value(i,
-                                                                                                      j +
-                                                                                                      2)).strip()
-                                                            else 0 if Question.query.filter_by(
-                                                                combination=str(projins.id) + str(
-                                                                    findareadata.id) + str(
-                                                                    findfuncdata.id) +
-                                                                            str(sh.cell_value(i,
-                                                                                              j + 2)).strip()) is None
-                                                            else Question.query.filter_by(
-                                                                combination=str(projins.id) + str(
-                                                                    findareadata.id) + str(
-                                                                    findfuncdata.id) + str(
-                                                                    sh.cell_value(i, j + 2)).strip()).first().id
-                                                            if sh.cell_value(i, j + 2) != ''
-                                                            else 0
-                                                        })
-                                                    maxscore = maxscore + int(sh.cell_value(i, j + 1))
-                                                    k = k + 1
-                                                else:
-                                                    break
-                                        elif str(sh.cell_value(i, 10)).strip() == 'Single choice':
-                                            k = 1
-                                            scores = []
-                                            for j in range(11, sh.ncols, 3):
-                                                if sh.cell_value(i, j) != '':
-                                                    answers.append(
-                                                        {
-                                                            "option{0}".format(k): str(
-                                                                sh.cell_value(i, j)).strip(),
-                                                            "score": sh.cell_value(i, j + 1),
-                                                            "childquestionid": [
-                                                                Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + child).first().id
-                                                                for
-                                                                child in
-                                                                str(sh.cell_value(i, j + 2)).strip().split(',')
-                                                                if
-                                                                Question.query.filter_by(
-                                                                    combination=str(projins.id) + str(
-                                                                        findareadata.id) + str(
-                                                                        findfuncdata.id) + child) is
-                                                                not None] if ',' in str(sh.cell_value(i,
-                                                                                                      j +
-                                                                                                      2)).strip()
-                                                            else 0 if Question.query.filter_by(
-                                                                combination=str(projins.id) + str(
-                                                                    findareadata.id) + str(
-                                                                    findfuncdata.id) +
-                                                                            str(sh.cell_value(i,
-                                                                                              j + 2)).strip()) is None
-                                                            else
-                                                            Question.query.filter_by(
-                                                                combination=str(projins.id) + str(
-                                                                    findareadata.id) + str(
-                                                                    findfuncdata.id) +
-                                                                            str(sh.cell_value(i, j + 2)).
-                                                                                strip()).first().id
-                                                            if sh.cell_value(i, j + 2) != ''
-                                                            else 0
-                                                        })
-                                                    scores.append(int(sh.cell_value(i, j + 1)))
-                                                    k = k + 1
-                                                else:
-                                                    break
-                                                maxscore = max(scores)
-                                        quesins = Question(str(sh.cell_value(i, 8)).strip(),
-                                                           str(sh.cell_value(i, 10)).strip(), answers,
-                                                           maxscore,
-                                                           None,
-                                                           findfuncdata.id, findareadata.id, projins.id,
-                                                           combination, sh.cell_value(i, 9), session['empid'])
-                                        db.session.add(quesins)
-                                        db.session.commit()
-                                        for a in answers:
-                                            if a['childquestionid'] != 0:
-                                                if isinstance(a['childquestionid'], list):
-                                                    for c in a['childquestionid']:
-                                                        data = Question.query.filter_by(id=c)
-                                                        result = [{col: getattr(d, col) for col in colsquestion} for d
-                                                                  in data]
-                                                        quesdatabefore = result[0]
-                                                        result.clear()
-                                                        if data.first() is not None:
-                                                            data.first().isdependentquestion = 1
-                                                            data.first().modifiedby = session['empid']
-                                                            data.first().islocked = 0
-                                                            db.session.add(data.first())
-                                                            db.session.commit()
-                                                            data = Question.query.filter_by(id=c)
-                                                            result = [{col: getattr(d, col) for col in colsquestion} for
-                                                                      d in data]
-                                                            quesdataafter = result[0]
-                                                            result.clear()
-                                                            # region call audit trail method
-                                                            auditins = Audittrail("QUESTION", "UPDATE",
-                                                                                  str(quesdatabefore),
-                                                                                  str(quesdataafter),
-                                                                                  session['empid'])
-                                                            db.session.add(auditins)
-                                                            db.session.commit()
-                                                            # end region
-                                                else:
-                                                    data = Question.query.filter_by(id=a['childquestionid'])
-                                                    result = [{col: getattr(d, col) for col in colsquestion} for d
-                                                              in data]
-                                                    quesdatabefore = result[0]
-                                                    result.clear()
-                                                    if data.first() is not None:
-                                                        data.first().isdependentquestion = 1
-                                                        data.first().modifiedby = session['empid']
-                                                        data.first().islocked = 0
-                                                        db.session.add(data.first())
-                                                        db.session.commit()
-                                                        data = Question.query.filter_by(id=a['childquestionid'])
-                                                        result = [{col: getattr(d, col) for col in colsquestion} for
-                                                                  d in data]
-                                                        quesdataafter = result[0]
-                                                        result.clear()
-                                                        # region call audit trail method
-                                                        auditins = Audittrail("QUESTION", "UPDATE",
-                                                                              str(quesdatabefore),
-                                                                              str(quesdataafter),
-                                                                              session['empid'])
-                                                        db.session.add(auditins)
-                                                        db.session.commit()
-                                                        # end region
-                                        data = Question.query.filter_by(id=quesins.id)
-                                        results = [{col: getattr(d, col) for col in colsquestion} for d in data]
-                                        # region call audit trail method
-                                        auditins = Audittrail("QUESTION", "ADD", None, str(results[0]),
-                                                              session['empid'])
-                                        db.session.add(auditins)
-                                        db.session.commit()
-                                        # end region
-                                    else:
-                                        pass
-                            return make_response(jsonify({"message": f"Project {projname}"
-                                                                     f" has been successfully added with"
-                                                                     f" the questions in the "
-                                                                     f"uploaded file",
-                                                          "data": newaddedproject})), 201
+                                return make_response(jsonify({"message": f"Project {projname}"
+                                                                         f" has been successfully added with"
+                                                                         f" the questions in the "
+                                                                         f"uploaded file",
+                                                              "data": newaddedproject})), 201
+                            else:
+                                return make_response(jsonify({"message": f"Project {projname} has been successfully added.",
+                                                              "data": newaddedproject})), 201
                         else:
-                            return make_response(jsonify({"message": f"Project {projname} has been successfully added.",
-                                                          "data": newaddedproject})), 201
+                            data_comp = Companydetails.query.filter_by(id=comp_id).first()
+                            return make_response(jsonify({"message": f"Project {projname} already exists for company "
+                                                                     f"{data_comp.companyname}."})), 400
                     else:
-                        data_comp = Companydetails.query.filter_by(id=comp_id).first()
-                        return make_response(jsonify({"message": f"Project {projname} already exists for company "
-                                                                 f"{data_comp.companyname}."})), 400
+                        return make_response(jsonify({"message": "Quota for no. of projects as per previous licensing "
+                                                                 "is full. Please contact DevOps Enabler "
+                                                                 "support team to renew further !!"})), 400
             else:
                 return make_response(jsonify({"message": resp})), 401
         else:
