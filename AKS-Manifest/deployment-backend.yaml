@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: dev  
   labels:
     app: doe_backend
 spec:
@@ -27,8 +26,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend
-  namespace: dev  
+  name: backend  
   labels:
     app: doe_backend
 spec:
